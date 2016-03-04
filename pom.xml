@@ -25,7 +25,7 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>identity-usermgt-workflow</artifactId>
+    <artifactId>identity-user-workflow</artifactId>
     <packaging>pom</packaging>
     <name>WSO2 Carbon Identity Workflow Mgt Module</name>
     <description>
