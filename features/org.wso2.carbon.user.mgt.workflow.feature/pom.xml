@@ -37,11 +37,13 @@
         <dependency>
             <groupId>org.wso2.carbon.identity</groupId>
             <artifactId>org.wso2.carbon.user.mgt.workflow.server.feature</artifactId>
+            <version>${identity.framework.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.identity</groupId>
             <artifactId>org.wso2.carbon.user.mgt.workflow.ui.feature</artifactId>
+            <version>${identity.framework.version}</version>
             <type>zip</type>
         </dependency>
     </dependencies>

@@ -114,6 +114,27 @@
         </pluginRepository>
     </pluginRepositories>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.wso2.carbon.identity</groupId>
+                <artifactId>org.wso2.carbon.user.mgt.workflow.server.feature</artifactId>
+                <version>${identity.framework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.identity</groupId>
+                <artifactId>org.wso2.carbon.user.mgt.workflow.ui.feature</artifactId>
+                <version>${identity.framework.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+
+    <properties>
+        <identity.framework.version>5.0.9-SNAPSHOT</identity.framework.version>
+    </properties>
+
+
     <modules>
         <module>components/org.wso2.carbon.user.mgt.workflow</module>
         <module>components/org.wso2.carbon.user.mgt.workflow.ui</module>
