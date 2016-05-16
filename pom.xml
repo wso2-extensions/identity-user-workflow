@@ -142,7 +142,6 @@
     <modules>
         <module>components/org.wso2.carbon.user.mgt.workflow</module>
         <module>components/org.wso2.carbon.user.mgt.workflow.ui</module>
-        <module>components/org.wso2.carbon.user.mgt.workflow.stub</module>
         <module>features/org.wso2.carbon.user.mgt.workflow.feature</module>
         <module>features/org.wso2.carbon.user.mgt.workflow.server.feature</module>
         <module>features/org.wso2.carbon.user.mgt.workflow.ui.feature</module>
