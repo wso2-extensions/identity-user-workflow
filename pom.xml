@@ -264,7 +264,7 @@
         <commons-logging.osgi.version.range>[1.2,2.0)</commons-logging.osgi.version.range>
 
         <!--Carbon identity version-->
-        <identity.framework.version>5.5.0-SNAPSHOT</identity.framework.version>
+        <identity.framework.version>5.1.1-SNAPSHOT</identity.framework.version>
         <carbon.identity.package.import.version.range>[5.0.0, 6.0.0)</carbon.identity.package.import.version.range>
         <carbon.identity.package.export.version>${identity.framework.version}</carbon.identity.package.export.version>
 
