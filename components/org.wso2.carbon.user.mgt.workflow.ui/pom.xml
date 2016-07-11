@@ -69,7 +69,9 @@
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
-                        <Export-Package>org.wso2.carbon.user.mgt.workflow.ui.*</Export-Package>
+                        <Export-Package>
+                            org.wso2.carbon.user.mgt.workflow.ui.*;version="${identity.user.workflow.exp.pkg.version}"
+                        </Export-Package>
                         <Import-Package>
                             org.wso2.carbon.ui;version="${carbon.kernel.package.import.version.range}",
                             org.apache.axis2;version="${axis2.osgi.version.range}",
