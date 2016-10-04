@@ -20,7 +20,7 @@
 
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.wso2.carbon.identity</groupId>
+    <groupId>org.wso2.carbon.identity.workflow.user</groupId>
     <artifactId>identity-user-workflow</artifactId>
     <version>5.1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -120,24 +120,24 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.wso2.carbon.identity</groupId>
+                <groupId>org.wso2.carbon.identity.workflow.user</groupId>
                 <artifactId>org.wso2.carbon.user.mgt.workflow.server.feature</artifactId>
                 <version>${project.version}</version>
                 <type>zip</type>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon.identity</groupId>
+                <groupId>org.wso2.carbon.identity.workflow.user</groupId>
                 <artifactId>org.wso2.carbon.user.mgt.workflow.ui.feature</artifactId>
                 <version>${project.version}</version>
                 <type>zip</type>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon.identity</groupId>
+                <groupId>org.wso2.carbon.identity.workflow.user</groupId>
                 <artifactId>org.wso2.carbon.user.mgt.workflow</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon.identity</groupId>
+                <groupId>org.wso2.carbon.identity.workflow.user</groupId>
                 <artifactId>org.wso2.carbon.user.mgt.workflow.ui</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -147,7 +147,7 @@
                 <version>${commons-lang.wso2.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon.identity</groupId>
+                <groupId>org.wso2.carbon.identity.framework</groupId>
                 <artifactId>org.wso2.carbon.identity.workflow.mgt</artifactId>
                 <version>${identity.framework.version}</version>
             </dependency>
@@ -264,7 +264,7 @@
         <commons-logging.osgi.version.range>[1.2,2.0)</commons-logging.osgi.version.range>
 
         <!--Carbon identity version-->
-        <identity.framework.version>5.2.0</identity.framework.version>
+        <identity.framework.version>5.5.0</identity.framework.version>
         <carbon.identity.package.import.version.range>[5.0.0, 6.0.0)</carbon.identity.package.import.version.range>
         <identity.user.workflow.exp.pkg.version>${project.version}</identity.user.workflow.exp.pkg.version>
 
