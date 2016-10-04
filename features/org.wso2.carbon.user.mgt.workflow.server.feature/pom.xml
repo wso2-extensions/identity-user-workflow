@@ -20,7 +20,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
-        <groupId>org.wso2.carbon.identity</groupId>
+        <groupId>org.wso2.carbon.identity.workflow.user</groupId>
         <artifactId>identity-user-workflow</artifactId>
         <relativePath>../../pom.xml</relativePath>
         <version>5.1.1-SNAPSHOT</version>
@@ -37,11 +37,11 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.workflow.mgt</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.workflow.user</groupId>
             <artifactId>org.wso2.carbon.user.mgt.workflow</artifactId>
         </dependency>
     </dependencies>
@@ -68,7 +68,7 @@
                                 </properties>
                             </adviceFile>
                             <bundles>
-                                <bundleDef>org.wso2.carbon.identity:org.wso2.carbon.user.mgt.workflow</bundleDef>
+                                <bundleDef>org.wso2.carbon.identity.workflow.user:org.wso2.carbon.user.mgt.workflow</bundleDef>
                             </bundles>
                             <importFeatures>
                                 <importFeatureDef>org.wso2.carbon.identity.workflow.mgt.server:compatible:${identity.framework.version}</importFeatureDef>
