@@ -67,10 +67,10 @@
                             </importFeatures>
                             <includedFeatures>
                                 <includedFeatureDef>
-                                    org.wso2.carbon.identity:org.wso2.carbon.user.mgt.workflow.server.feature
+                                    org.wso2.carbon.identity.workflow.user:org.wso2.carbon.user.mgt.workflow.server.feature
                                 </includedFeatureDef>
                                 <includedFeatureDef>
-                                    org.wso2.carbon.identity:org.wso2.carbon.user.mgt.workflow.ui.feature
+                                    org.wso2.carbon.identity.workflow.user:org.wso2.carbon.user.mgt.workflow.ui.feature
                                 </includedFeatureDef>
                             </includedFeatures>
                         </configuration>
