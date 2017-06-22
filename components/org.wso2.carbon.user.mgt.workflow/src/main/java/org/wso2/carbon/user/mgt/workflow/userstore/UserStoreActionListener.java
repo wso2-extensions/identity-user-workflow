@@ -245,10 +245,11 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     public boolean doPreAddRole(String roleName, String[] userList, Permission[] permissions, UserStoreManager
             userStoreManager) throws UserStoreException {
 
+        if (!isEnable() || isCalledViaIdentityMgtListners()) {
+            return true;
+        }
+
         try {
-            if (!isEnable() || isCalledViaIdentityMgtListners()) {
-                return true;
-            }
             AddRoleWFRequestHandler addRoleWFRequestHandler = new AddRoleWFRequestHandler();
             String domain = userStoreManager.getRealmConfiguration().getUserStoreProperty(UserCoreConstants.RealmConfig
                                                                                                   .PROPERTY_DOMAIN_NAME);
