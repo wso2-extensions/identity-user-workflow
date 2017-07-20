@@ -218,7 +218,6 @@ public class AddRoleWFRequestHandler extends AbstractWorkflowRequestHandler {
 
         WorkflowManagementService workflowService = IdentityWorkflowDataHolder.getInstance().getWorkflowService();
 
-        boolean eventEngaged = workflowService.isEventAssociated(UserStoreWFConstants.ADD_ROLE_EVENT);
         RealmService realmService = IdentityWorkflowDataHolder.getInstance().getRealmService();
         UserRealm userRealm;
         AbstractUserStoreManager userStoreManager;
