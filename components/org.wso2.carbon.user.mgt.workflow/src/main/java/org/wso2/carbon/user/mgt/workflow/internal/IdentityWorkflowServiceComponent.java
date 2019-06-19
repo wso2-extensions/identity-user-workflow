@@ -15,12 +15,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.wso2.carbon.user.mgt.workflow.internal;
-
 
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService;
 import org.wso2.carbon.identity.workflow.mgt.extension.WorkflowRequestHandler;
 import org.wso2.carbon.user.core.listener.UserOperationEventListener;
@@ -37,36 +40,45 @@ import org.wso2.carbon.user.mgt.workflow.userstore.UpdateUserRolesWFRequestHandl
 import org.wso2.carbon.user.mgt.workflow.userstore.UserStoreActionListener;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
-/**
- * @scr.component name="identity.workflow" immediate="true"
- * @scr.reference name="user.realmservice.default" interface="org.wso2.carbon.user.core.service.RealmService"
- * cardinality="1..1" policy="dynamic" bind="setRealmService"
- * unbind="unsetRealmService"
- * @scr.reference name="workflowservice.default" interface="org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService"
- * cardinality="1..1" policy="dynamic" bind="setWorkflowService"
- * unbind="unsetWorkflowService"
- * @scr.reference name="config.context.service"
- * interface="org.wso2.carbon.utils.ConfigurationContextService"
- * cardinality="1..1" policy="dynamic"  bind="setConfigurationContextService"
- * unbind="unsetConfigurationContextService"
- */
+@Component(
+        name = "identity.workflow",
+        immediate = true)
 public class IdentityWorkflowServiceComponent {
 
+    @Reference(
+            name = "user.realmservice.default",
+            service = org.wso2.carbon.user.core.service.RealmService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetRealmService")
     protected void setRealmService(RealmService realmService) {
 
         IdentityWorkflowDataHolder.getInstance().setRealmService(realmService);
     }
 
+    @Reference(
+            name = "config.context.service",
+            service = org.wso2.carbon.utils.ConfigurationContextService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetConfigurationContextService")
     protected void setConfigurationContextService(ConfigurationContextService contextService) {
 
         IdentityWorkflowDataHolder.getInstance().setConfigurationContextService(contextService);
     }
 
+    @Reference(
+            name = "workflowservice.default",
+            service = org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetWorkflowService")
     protected void setWorkflowService(WorkflowManagementService workflowService) {
 
         IdentityWorkflowDataHolder.getInstance().setWorkflowService(workflowService);
     }
 
+    @Activate
     protected void activate(ComponentContext context) {
 
         BundleContext bundleContext = context.getBundleContext();
@@ -75,19 +87,19 @@ public class IdentityWorkflowServiceComponent {
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new AddRoleWFRequestHandler(), null);
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new DeleteUserWFRequestHandler(), null);
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new DeleteRoleWFRequestHandler(), null);
-// todo: commenting out for a test failure
-//        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new ChangeCredentialWFRequestHandler(),
-//                null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(),
-                new DeleteMultipleClaimsWFRequestHandler(), null);
+        // todo: commenting out for a test failure
+        // bundleContext.registerService(WorkflowRequestHandler.class.getName(), new ChangeCredentialWFRequestHandler(),
+        // null);
+        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new
+                DeleteMultipleClaimsWFRequestHandler(), null);
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new SetMultipleClaimsWFRequestHandler()
                 , null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateUserRolesWFRequestHandler()
-                , null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateRoleUsersWFRequestHandler()
-                , null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateRoleNameWFRequestHandler()
-                , null);
+        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateUserRolesWFRequestHandler(),
+                null);
+        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateRoleUsersWFRequestHandler(),
+                null);
+        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateRoleNameWFRequestHandler(),
+                null);
         IdentityWorkflowDataHolder.getInstance().setBundleContext(bundleContext);
     }
 
