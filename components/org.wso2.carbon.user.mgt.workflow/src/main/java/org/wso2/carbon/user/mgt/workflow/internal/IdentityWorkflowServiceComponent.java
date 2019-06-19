@@ -19,6 +19,11 @@ package org.wso2.carbon.user.mgt.workflow.internal;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService;
 import org.wso2.carbon.identity.workflow.mgt.extension.WorkflowRequestHandler;
 import org.wso2.carbon.user.core.listener.UserOperationEventListener;
@@ -34,50 +39,48 @@ import org.wso2.carbon.user.mgt.workflow.userstore.UpdateRoleUsersWFRequestHandl
 import org.wso2.carbon.user.mgt.workflow.userstore.UpdateUserRolesWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.UserStoreActionListener;
 import org.wso2.carbon.utils.ConfigurationContextService;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
 
 @Component(
-         name = "identity.workflow", 
-         immediate = true)
+        name = "identity.workflow",
+        immediate = true)
 public class IdentityWorkflowServiceComponent {
 
     @Reference(
-             name = "user.realmservice.default", 
-             service = org.wso2.carbon.user.core.service.RealmService.class, 
-             cardinality = ReferenceCardinality.MANDATORY, 
-             policy = ReferencePolicy.DYNAMIC, 
-             unbind = "unsetRealmService")
+            name = "user.realmservice.default",
+            service = org.wso2.carbon.user.core.service.RealmService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetRealmService")
     protected void setRealmService(RealmService realmService) {
+
         IdentityWorkflowDataHolder.getInstance().setRealmService(realmService);
     }
 
     @Reference(
-             name = "config.context.service", 
-             service = org.wso2.carbon.utils.ConfigurationContextService.class, 
-             cardinality = ReferenceCardinality.MANDATORY, 
-             policy = ReferencePolicy.DYNAMIC, 
-             unbind = "unsetConfigurationContextService")
+            name = "config.context.service",
+            service = org.wso2.carbon.utils.ConfigurationContextService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetConfigurationContextService")
     protected void setConfigurationContextService(ConfigurationContextService contextService) {
+
         IdentityWorkflowDataHolder.getInstance().setConfigurationContextService(contextService);
     }
 
     @Reference(
-             name = "workflowservice.default", 
-             service = org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService.class, 
-             cardinality = ReferenceCardinality.MANDATORY, 
-             policy = ReferencePolicy.DYNAMIC, 
-             unbind = "unsetWorkflowService")
+            name = "workflowservice.default",
+            service = org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetWorkflowService")
     protected void setWorkflowService(WorkflowManagementService workflowService) {
+
         IdentityWorkflowDataHolder.getInstance().setWorkflowService(workflowService);
     }
 
     @Activate
     protected void activate(ComponentContext context) {
+
         BundleContext bundleContext = context.getBundleContext();
         bundleContext.registerService(UserOperationEventListener.class.getName(), new UserStoreActionListener(), null);
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new AddUserWFRequestHandler(), null);
@@ -87,24 +90,31 @@ public class IdentityWorkflowServiceComponent {
         // todo: commenting out for a test failure
         // bundleContext.registerService(WorkflowRequestHandler.class.getName(), new ChangeCredentialWFRequestHandler(),
         // null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new DeleteMultipleClaimsWFRequestHandler(), null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new SetMultipleClaimsWFRequestHandler(), null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateUserRolesWFRequestHandler(), null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateRoleUsersWFRequestHandler(), null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateRoleNameWFRequestHandler(), null);
+        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new
+                DeleteMultipleClaimsWFRequestHandler(), null);
+        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new SetMultipleClaimsWFRequestHandler()
+                , null);
+        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateUserRolesWFRequestHandler(),
+                null);
+        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateRoleUsersWFRequestHandler(),
+                null);
+        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateRoleNameWFRequestHandler(),
+                null);
         IdentityWorkflowDataHolder.getInstance().setBundleContext(bundleContext);
     }
 
     protected void unsetRealmService(RealmService realmService) {
+
         IdentityWorkflowDataHolder.getInstance().setRealmService(null);
     }
 
     protected void unsetConfigurationContextService(ConfigurationContextService contextService) {
+
         IdentityWorkflowDataHolder.getInstance().setConfigurationContextService(null);
     }
 
     protected void unsetWorkflowService(WorkflowManagementService workflowService) {
+
         IdentityWorkflowDataHolder.getInstance().setWorkflowService(null);
     }
 }
-
