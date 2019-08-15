@@ -40,7 +40,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     public static final String DO_POST_ADD_USER_IDENTITY_PROPERTY = "doPostAddUser";
     public static final String DO_PRE_SET_USER_CLAIM_VALUES_IDENTITY_PROPERT = "doPreSetUserClaimValues";
     public static final String DO_POST_UPDATE_CREDENTIAL_IDENTITY_PROPERTY = "doPostUpdateCredential";
-    private static Log log = LogFactory.getLog(UserStoreActionListener.class);
+    private static final Log log = LogFactory.getLog(UserStoreActionListener.class);
 
     @Override
     public int getExecutionOrderId() {

@@ -30,7 +30,7 @@ import java.util.List;
 
 public class UserManagementWorkflowService {
 
-    private static Log log = LogFactory.getLog(UserManagementWorkflowService.class);
+    private static final Log log = LogFactory.getLog(UserManagementWorkflowService.class);
 
     WorkflowManagementService workflowService = IdentityWorkflowDataHolder.getInstance().getWorkflowService();
 
