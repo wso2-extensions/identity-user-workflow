@@ -68,7 +68,7 @@
                                 <bundleDef>org.wso2.carbon.identity.workflow.user:org.wso2.carbon.user.mgt.workflow.ui</bundleDef>
                             </bundles>
                             <importFeatures>
-                                <importFeatureDef>org.wso2.carbon.core.ui:compatible:${carbon.kernel.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.core.ui:compatible:${carbon.kernel.feature.version}</importFeatureDef>
                             </importFeatures>
                         </configuration>
                     </execution>
