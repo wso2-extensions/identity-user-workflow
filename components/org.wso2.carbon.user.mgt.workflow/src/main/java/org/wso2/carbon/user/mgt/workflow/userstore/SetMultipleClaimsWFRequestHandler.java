@@ -54,7 +54,7 @@ public class SetMultipleClaimsWFRequestHandler extends AbstractWorkflowRequestHa
     private static final String PROFILE_NAME = "Profile";
 
     private static final Map<String, String> PARAM_DEFINITION;
-    private static Log log = LogFactory.getLog(SetMultipleClaimsWFRequestHandler.class);
+    private static final Log log = LogFactory.getLog(SetMultipleClaimsWFRequestHandler.class);
 
     static {
         PARAM_DEFINITION = new LinkedHashMap<>();

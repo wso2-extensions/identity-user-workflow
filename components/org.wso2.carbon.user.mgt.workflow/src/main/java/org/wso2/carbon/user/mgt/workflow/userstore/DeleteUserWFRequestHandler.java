@@ -52,7 +52,7 @@ public class DeleteUserWFRequestHandler extends AbstractWorkflowRequestHandler {
     private static final String USER_STORE_DOMAIN = "User Store Domain";
 
     private static final Map<String, String> PARAM_DEFINITION;
-    private static Log log = LogFactory.getLog(DeleteUserWFRequestHandler.class);
+    private static final Log log = LogFactory.getLog(DeleteUserWFRequestHandler.class);
 
 
     static {
