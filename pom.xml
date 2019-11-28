@@ -142,6 +142,11 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>commons-cli.wso2</groupId>
+                <artifactId>commons-cli</artifactId>
+                <version>${commons-cli.osgi.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>commons-lang.wso2</groupId>
                 <artifactId>commons-lang</artifactId>
                 <version>${commons-lang.wso2.version}</version>
@@ -279,6 +284,7 @@
         <commons-io.wso2.version>2.4.0.wso2v1</commons-io.wso2.version>
         <commons-lang.wso2.osgi.version.range>[2.6.0,3.0.0)</commons-lang.wso2.osgi.version.range>
         <commons-logging.osgi.version.range>[1.2,2.0)</commons-logging.osgi.version.range>
+        <commons-cli.osgi.version>1.2.0.wso2v1</commons-cli.osgi.version>
 
         <!--Carbon identity version-->
         <identity.framework.version>5.14.67</identity.framework.version>

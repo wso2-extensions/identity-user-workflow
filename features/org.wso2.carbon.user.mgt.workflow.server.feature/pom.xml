@@ -44,6 +44,10 @@
             <groupId>org.wso2.carbon.identity.workflow.user</groupId>
             <artifactId>org.wso2.carbon.user.mgt.workflow</artifactId>
         </dependency>
+        <dependency>
+            <groupId>commons-cli.wso2</groupId>
+            <artifactId>commons-cli</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -69,6 +73,9 @@
                             <bundles>
                                 <bundleDef>org.wso2.carbon.identity.workflow.user:org.wso2.carbon.user.mgt.workflow</bundleDef>
                             </bundles>
+                            <importBundles>
+                                <importBundleDef>commons-cli.wso2:commons-cli</importBundleDef>
+                            </importBundles>
                             <importFeatures>
                                 <importFeatureDef>org.wso2.carbon.identity.workflow.mgt.server:compatible:${identity.framework.version}</importFeatureDef>
                             </importFeatures>
