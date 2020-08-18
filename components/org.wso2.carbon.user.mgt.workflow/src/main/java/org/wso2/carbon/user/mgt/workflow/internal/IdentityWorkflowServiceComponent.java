@@ -26,6 +26,7 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService;
 import org.wso2.carbon.identity.workflow.mgt.extension.WorkflowRequestHandler;
+import org.wso2.carbon.user.core.listener.UserManagementErrorEventListener;
 import org.wso2.carbon.user.core.listener.UserOperationEventListener;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.mgt.workflow.userstore.AddRoleWFRequestHandler;
@@ -76,6 +77,24 @@ public class IdentityWorkflowServiceComponent {
     protected void setWorkflowService(WorkflowManagementService workflowService) {
 
         IdentityWorkflowDataHolder.getInstance().setWorkflowService(workflowService);
+    }
+
+    @Reference(name = "user.management.error.event.listener.service",
+               service = org.wso2.carbon.user.core.listener.UserManagementErrorEventListener.class,
+               cardinality = ReferenceCardinality.MULTIPLE,
+               policy = ReferencePolicy.DYNAMIC,
+               unbind = "unsetUserManagementErrorEventListenerService")
+    protected synchronized void setUserManagementErrorEventListenerService(
+            UserManagementErrorEventListener errorEventListenerService) {
+
+        IdentityWorkflowDataHolder.getInstance()
+                .addErrorEventListener(errorEventListenerService.getExecutionOrderId(), errorEventListenerService);
+    }
+
+    protected synchronized void unsetUserManagementErrorEventListenerService(
+            UserManagementErrorEventListener errorEventListener) {
+
+        IdentityWorkflowDataHolder.getInstance().removeErrorEventListener(errorEventListener.getExecutionOrderId());
     }
 
     @Activate

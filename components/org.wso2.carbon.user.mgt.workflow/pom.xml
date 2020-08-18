@@ -68,6 +68,7 @@
                             org.osgi.framework; version="${osgi.framework.imp.pkg.version.range}",
                             org.osgi.service.component; version="${osgi.service.component.imp.pkg.version.range}",
                             org.wso2.carbon.identity.workflow.mgt.exception; version="${carbon.identity.package.import.version.range}",
+                            org.wso2.carbon; version="${carbon.kernel.package.import.version.range}",
                             org.wso2.carbon.user.api; version="${carbon.user.api.imp.pkg.version.range}",
                             org.wso2.carbon.user.core; version="${carbon.kernel.package.import.version.range}",
                             org.wso2.carbon.user.core.common; version="${carbon.kernel.package.import.version.range}",
@@ -82,6 +83,8 @@
                             org.wso2.carbon.identity.core.*; version="${carbon.identity.package.import.version.range}",
                             org.wso2.carbon.user.core.util; version="${carbon.kernel.package.import.version.range}",
                             org.wso2.carbon.core.util; version="${carbon.kernel.package.import.version.range}",
+                            org.wso2.carbon.utils.multitenancy; version="${carbon.kernel.package.import.version.range}",
+                            org.wso2.carbon.user.core.constants; version="${carbon.kernel.package.import.version.range}",
                         </Import-Package>
                         <Export-Package>
                             !org.wso2.carbon.user.mgt.workflow.internal;version="${identity.user.workflow.exp.pkg.version}",
