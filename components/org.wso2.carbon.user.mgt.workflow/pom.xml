@@ -43,6 +43,10 @@
             <artifactId>org.wso2.carbon.user.core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wso2.carbon.identity.governance</groupId>
+            <artifactId>org.wso2.carbon.identity.recovery</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.scr.ds-annotations</artifactId>
             <scope>provided</scope>
@@ -85,6 +89,8 @@
                             org.wso2.carbon.core.util; version="${carbon.kernel.package.import.version.range}",
                             org.wso2.carbon.utils.multitenancy; version="${carbon.kernel.package.import.version.range}",
                             org.wso2.carbon.user.core.constants; version="${carbon.kernel.package.import.version.range}",
+                            org.wso2.carbon.identity.recovery.model; version="${identity.governance.package.import.version.range}",
+                            org.wso2.carbon.identity.recovery.util; version="${identity.governance.package.import.version.range}",
                         </Import-Package>
                         <Export-Package>
                             !org.wso2.carbon.user.mgt.workflow.internal;version="${identity.user.workflow.exp.pkg.version}",

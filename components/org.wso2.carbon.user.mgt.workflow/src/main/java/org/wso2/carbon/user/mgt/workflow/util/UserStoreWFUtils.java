@@ -22,6 +22,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.CarbonConstants;
+import org.wso2.carbon.identity.recovery.model.Property;
+import org.wso2.carbon.identity.recovery.util.Utils;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserStoreException;
@@ -33,6 +35,11 @@ import org.wso2.carbon.utils.UnsupportedSecretTypeException;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.nio.CharBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -176,5 +183,50 @@ public class UserStoreWFUtils {
                 return;
             }
         }
+    }
+
+    /**
+     * Get self registration arbitrary properties.
+     *
+     * @return map of self registration properties.
+     */
+    public static Map<String, String> getSelfRegistrationArbitraryProperties() {
+
+        Property[] arbitraryProperties = Utils.getArbitraryProperties();
+        if (arbitraryProperties == null || arbitraryProperties.length == 0) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, String> propertiesMap = new HashMap<>();
+        for (Property property : arbitraryProperties) {
+            if (StringUtils.isNotBlank(property.getKey())) {
+                propertiesMap.put(property.getKey(), property.getValue());
+            }
+        }
+        return propertiesMap;
+    }
+
+    /**
+     * Set self registration arbitrary properties.
+     *
+     * @param propertiesMap properties map.
+     */
+    public static void setSelfRegistrationArbitraryProperties(Map<String, String> propertiesMap) {
+
+        Property[] arbitraryProperties = Utils.getArbitraryProperties();
+
+        List<Property> properties;
+        if (arbitraryProperties != null && arbitraryProperties.length > 0) {
+            properties = new ArrayList<>(Arrays.asList(arbitraryProperties));
+        } else {
+            properties = new ArrayList<>();
+        }
+
+        for (Map.Entry<String, String> entry : propertiesMap.entrySet()) {
+            properties.add(new Property(entry.getKey(), entry.getValue()));
+        }
+
+        Utils.clearArbitraryProperties();
+        Utils.setArbitraryProperties(properties.toArray(new Property[0]));
     }
 }
