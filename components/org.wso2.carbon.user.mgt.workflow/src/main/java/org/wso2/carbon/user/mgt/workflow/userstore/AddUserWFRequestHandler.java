@@ -50,6 +50,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils.getSelfRegistrationArbitraryProperties;
+import static org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils.setSelfRegistrationArbitraryProperties;
+
 public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
 
     private static final String FRIENDLY_NAME = "Add User";
@@ -61,6 +64,7 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
     private static final String ROLE_LIST = "Roles";
     private static final String CLAIM_LIST = "Claims";
     private static final String PROFILE = "Profile";
+    private static final String ARBITRARY_ATTRIBUTE_PREFIX = "self_arbitrary_attr_";
 
     private static final Map<String, String> PARAM_DEFINITION;
     private static final Log log = LogFactory.getLog(AddUserWFRequestHandler.class);
@@ -122,6 +126,13 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
         wfParams.put(CLAIM_LIST, claims);
         wfParams.put(PROFILE, profile);
         nonWfParams.put(CREDENTIAL, encryptedCredentials);
+
+        // Store self registration arbitrary attributes as non-workflow properties.
+        Map<String, String> selfRegistrationArbitraryAttributes = getSelfRegistrationArbitraryProperties();
+        for(Map.Entry<String, String> entry : selfRegistrationArbitraryAttributes.entrySet()) {
+            nonWfParams.put(ARBITRARY_ATTRIBUTE_PREFIX + entry.getKey(), entry.getValue());
+        }
+
         String uuid = UUID.randomUUID().toString();
         Entity[] entities = new Entity[roleList.length + 1];
         entities[0] = new Entity(fullyQualifiedName, UserStoreWFConstants.ENTITY_TYPE_USER, tenant);
@@ -229,6 +240,19 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
         }
         Map<String, String> claims = (Map<String, String>) requestParams.get(CLAIM_LIST);
         String profile = (String) requestParams.get(PROFILE);
+
+        // Retrieve self registration arbitrary attributes and set to the thread local variable.
+        Map<String, String> selfRegistrationArbitraryAttributes = new HashMap<>();
+        for (Map.Entry<String, Object> params : requestParams.entrySet()) {
+            if (params.getKey().startsWith(ARBITRARY_ATTRIBUTE_PREFIX)) {
+                selfRegistrationArbitraryAttributes
+                        .put(params.getKey().replace(ARBITRARY_ATTRIBUTE_PREFIX, ""), (String) params.getValue());
+            }
+        }
+
+        if (!selfRegistrationArbitraryAttributes.isEmpty()) {
+            setSelfRegistrationArbitraryProperties(selfRegistrationArbitraryAttributes);
+        }
 
         if (WorkflowRequestStatus.APPROVED.toString().equals(status) ||
                 WorkflowRequestStatus.SKIPPED.toString().equals(status)) {

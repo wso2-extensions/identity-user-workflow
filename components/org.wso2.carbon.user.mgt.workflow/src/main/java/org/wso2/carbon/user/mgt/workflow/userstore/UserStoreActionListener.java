@@ -29,9 +29,17 @@ import org.wso2.carbon.user.api.Permission;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.util.UserCoreUtil;
+import org.wso2.carbon.user.mgt.workflow.util.ValidationResult;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.wso2.carbon.user.core.constants.UserCoreErrorConstants.ErrorMessages.ERROR_CODE_INVALID_PASSWORD;
+import static org.wso2.carbon.user.core.constants.UserCoreErrorConstants.ErrorMessages.ERROR_CODE_INVALID_USER_NAME;
+import static org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils.isPasswordValid;
+import static org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils.isUsernameValid;
+import static org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils.triggerAddUserFailureListeners;
 
 public class UserStoreActionListener extends AbstractIdentityUserOperationEventListener {
 
@@ -59,6 +67,31 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
         if (!isEnable() || isCalledViaIdentityMgtListners()) {
             return true;
         }
+
+        ValidationResult usernameValidationResult = isUsernameValid(userName, userStoreManager.getRealmConfiguration());
+        if (!usernameValidationResult.isValid()) {
+            String errorCode = ERROR_CODE_INVALID_USER_NAME.getCode();
+            String errorMessage = String
+                    .format(ERROR_CODE_INVALID_USER_NAME.getMessage(), UserCoreUtil.removeDomainFromName(userName),
+                            usernameValidationResult.getRegExUsed());
+
+            triggerAddUserFailureListeners(errorCode, errorMessage, userName, credential, roleList, claims, profile,
+                    userStoreManager);
+            throw new UserStoreException(errorCode + " - " + errorMessage);
+        }
+
+        ValidationResult passwordValidationResult = isPasswordValid(credential,
+                userStoreManager.getRealmConfiguration());
+        if (!passwordValidationResult.isValid()) {
+            String errorCode = ERROR_CODE_INVALID_PASSWORD.getCode();
+            String errorMessage = String
+                    .format(ERROR_CODE_INVALID_PASSWORD.getMessage(), passwordValidationResult.getRegExUsed());
+
+            triggerAddUserFailureListeners(errorCode, errorMessage, userName, credential, roleList, claims, profile,
+                    userStoreManager);
+            throw new UserStoreException(errorCode + " - " + errorMessage);
+        }
+
         try {
             AddUserWFRequestHandler addUserWFRequestHandler = new AddUserWFRequestHandler();
             String domain = userStoreManager.getRealmConfiguration().getUserStoreProperty(UserCoreConstants.RealmConfig
