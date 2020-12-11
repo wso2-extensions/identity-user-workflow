@@ -292,7 +292,7 @@
         <commons-cli.osgi.version>1.2.0.wso2v1</commons-cli.osgi.version>
 
         <!--Carbon identity version-->
-        <identity.framework.version>5.14.67</identity.framework.version>
+        <identity.framework.version>5.18.199</identity.framework.version>
         <carbon.identity.package.import.version.range>[5.14.67, 6.0.0)</carbon.identity.package.import.version.range>
         <identity.user.workflow.exp.pkg.version>${project.version}</identity.user.workflow.exp.pkg.version>
         <identity.governance.version>1.4.1</identity.governance.version>
