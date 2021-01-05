@@ -82,13 +82,13 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
 
         ValidationResult passwordValidationResult = isPasswordValid(credential,
                 userStoreManager.getRealmConfiguration());
-        if (!passwordValidationResult.isValid()) {
+        // Check if the skipPasswordPatternValidationThreadLocal is set to false and password is invalid.
+        if (!UserCoreUtil.getSkipPasswordPatternValidationThreadLocal() && !passwordValidationResult.isValid()) {
             String errorCode = ERROR_CODE_INVALID_PASSWORD.getCode();
             String errorMessage = String
                     .format(ERROR_CODE_INVALID_PASSWORD.getMessage(), passwordValidationResult.getRegExUsed());
-
-            triggerAddUserFailureListeners(errorCode, errorMessage, userName, credential, roleList, claims, profile,
-                    userStoreManager);
+            triggerAddUserFailureListeners(errorCode, errorMessage, userName, credential, roleList, claims,
+                    profile, userStoreManager);
             throw new UserStoreException(errorCode + " - " + errorMessage);
         }
 
