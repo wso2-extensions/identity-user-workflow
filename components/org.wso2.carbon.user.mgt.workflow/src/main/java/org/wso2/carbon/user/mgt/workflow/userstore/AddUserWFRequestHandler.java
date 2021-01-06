@@ -32,6 +32,7 @@ import org.wso2.carbon.identity.workflow.mgt.exception.InternalWorkflowException
 import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowException;
 import org.wso2.carbon.identity.workflow.mgt.extension.AbstractWorkflowRequestHandler;
 import org.wso2.carbon.identity.workflow.mgt.util.WorkflowDataType;
+import org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants;
 import org.wso2.carbon.identity.workflow.mgt.util.WorkflowRequestStatus;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
@@ -294,12 +295,14 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
         for (int i = 0; i < entities.length; i++) {
             try {
                 if (UserStoreWFConstants.ENTITY_TYPE_USER.equals(entities[i].getEntityType()) && (workflowService
-                        .entityHasPendingWorkflowsOfType(entities[i], UserStoreWFConstants.ADD_USER_EVENT) ||
+                        .entityHasPendingWorkflowsOfType(entities[i], UserStoreWFConstants.ADD_USER_EVENT))) {
+                    throw new WorkflowException(WorkflowErrorConstants.ErrorMessages
+                            .ERROR_CODE_USER_WF_ALREADY_EXISTS.getMessage(), WorkflowErrorConstants.ErrorMessages
+                            .ERROR_CODE_USER_WF_ALREADY_EXISTS.getCode());
+                } else if (UserStoreWFConstants.ENTITY_TYPE_USER.equals(entities[i].getEntityType()) && (
                         userStoreManager.isExistingUser(entities[i].getEntityId()))) {
-
                     throw new WorkflowException(IdentityCoreConstants.EXISTING_USER + ":" + "Username already exists" +
                             " in the system. Please pick another username.");
-
                 } else if (eventEngaged && UserStoreWFConstants.ENTITY_TYPE_ROLE.equals(entities[i].getEntityType())
                         && (workflowService.entityHasPendingWorkflowsOfType(entities[i], UserStoreWFConstants.DELETE_ROLE_EVENT) ||
                         workflowService.entityHasPendingWorkflowsOfType(entities[i], UserStoreWFConstants.UPDATE_ROLE_NAME_EVENT))) {

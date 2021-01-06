@@ -104,6 +104,9 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setUsername(currentUser);
             return addUserWFRequestHandler.startAddUserFlow(domain, userName, credential, roleList, claims, profile);
         } catch (WorkflowException e) {
+            if (e.getErrorCode() != null) {
+                throw new UserStoreException(e.getMessage(), e.getErrorCode(), e);
+            }
             // Sending e.getMessage() since it is required to give error message to end user.
             throw new UserStoreException(e.getMessage(), e);
         } finally {
