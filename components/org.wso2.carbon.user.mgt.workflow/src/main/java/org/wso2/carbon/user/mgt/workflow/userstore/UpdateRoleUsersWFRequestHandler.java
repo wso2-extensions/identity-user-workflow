@@ -159,7 +159,7 @@ public class UpdateRoleUsersWFRequestHandler extends AbstractWorkflowRequestHand
         }
         String userStoreDomain = (String) requestParams.get(USER_STORE_DOMAIN);
         if (StringUtils.isNotBlank(userStoreDomain)) {
-            roleName = userStoreDomain + "/" + roleName;
+            roleName = UserCoreUtil.addDomainToName(roleName, userStoreDomain);
         }
 
         List<String> deletedUserList = ((List<String>) requestParams.get(DELETED_USER_LIST));
