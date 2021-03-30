@@ -29,10 +29,13 @@ import org.wso2.carbon.user.api.Permission;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.user.mgt.workflow.util.ValidationResult;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.wso2.carbon.user.core.constants.UserCoreErrorConstants.ErrorMessages.ERROR_CODE_INVALID_PASSWORD;
@@ -306,6 +309,24 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     }
 
     @Override
+    public boolean doPreAddInternalRoleWithID(String roleName, String[] userIDList, Permission[] permissions,
+                                              UserStoreManager userStoreManager) throws UserStoreException {
+
+        String[] userNames = getUserNamesFromUserIDs(userIDList, (AbstractUserStoreManager) userStoreManager);
+        return doPreAddRole(roleName, userNames, permissions, userStoreManager);
+    }
+
+    private String[] getUserNamesFromUserIDs(String[] userIDList, AbstractUserStoreManager userStoreManager)
+            throws UserStoreException {
+
+        if (userIDList == null) {
+            return new String[0];
+        }
+        List<String> userNamesList = userStoreManager.getUserNamesFromUserIDs(Arrays.asList(userIDList));
+        return userNamesList.toArray(new String[0]);
+    }
+
+    @Override
     public boolean doPreDeleteRole(String roleName, UserStoreManager userStoreManager) throws UserStoreException {
 
         if (!isEnable() || isCalledViaIdentityMgtListners()) {
@@ -329,6 +350,13 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
         } finally {
             PrivilegedCarbonContext.endTenantFlow();
         }
+    }
+
+    @Override
+    public boolean doPreDeleteInternalRole(String roleName, UserStoreManager userStoreManager)
+            throws UserStoreException {
+
+        return doPreDeleteRole(roleName, userStoreManager);
     }
 
     @Override
@@ -358,6 +386,23 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     }
 
     @Override
+    public boolean doPreUpdateInternalRoleName(String roleName, String newRoleName, UserStoreManager userStoreManager)
+            throws UserStoreException {
+
+        return doPreUpdateRoleName(roleName, newRoleName, userStoreManager);
+    }
+
+    @Override
+    public boolean doPreUpdateUserListOfInternalRoleWithID(String roleName, String[] deletedUsersIDs, String[]
+            newUsersIDs, UserStoreManager userStoreManager) throws UserStoreException {
+
+        String[] newUserNames = getUserNamesFromUserIDs(newUsersIDs, (AbstractUserStoreManager) userStoreManager);
+        String[] deletedUserNames = getUserNamesFromUserIDs(deletedUsersIDs,
+                (AbstractUserStoreManager) userStoreManager);
+        return doPreUpdateUserListOfRole(roleName, deletedUserNames, newUserNames, userStoreManager);
+    }
+
+    @Override
     public boolean doPreUpdateUserListOfRole(String roleName, String[] deletedUsers, String[] newUsers, UserStoreManager
             userStoreManager) throws UserStoreException {
         if (!isEnable() || isCalledViaIdentityMgtListners()) {
@@ -381,6 +426,15 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
         } finally {
             PrivilegedCarbonContext.endTenantFlow();
         }
+    }
+
+    @Override
+    public boolean doPreUpdateInternalRoleListOfUserWithID(String userID, String[] deletedRoles, String[] newRoles,
+                                                           UserStoreManager userStoreManager)
+            throws UserStoreException {
+
+        String userName = ((AbstractUserStoreManager) userStoreManager).getUserNameFromUserID(userID);
+        return doPreUpdateRoleListOfUser(userName, deletedRoles, newRoles, userStoreManager);
     }
 
     @Override
