@@ -72,7 +72,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
         }
 
         ValidationResult usernameValidationResult = isUsernameValid(userName, userStoreManager.getRealmConfiguration());
-        if (!usernameValidationResult.isValid()) {
+        if (!usernameValidationResult.isValid() && !UserCoreUtil.getSkipUsernamePatternValidationThreadLocal()) {
             String errorCode = ERROR_CODE_INVALID_USER_NAME.getCode();
             String errorMessage = String
                     .format(ERROR_CODE_INVALID_USER_NAME.getMessage(), UserCoreUtil.removeDomainFromName(userName),
