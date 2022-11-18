@@ -25,20 +25,9 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.event.services.IdentityEventService;
-import org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService;
-import org.wso2.carbon.identity.workflow.mgt.extension.WorkflowRequestHandler;
 import org.wso2.carbon.user.core.listener.UserManagementErrorEventListener;
 import org.wso2.carbon.user.core.listener.UserOperationEventListener;
 import org.wso2.carbon.user.core.service.RealmService;
-import org.wso2.carbon.user.mgt.workflow.userstore.AddRoleWFRequestHandler;
-import org.wso2.carbon.user.mgt.workflow.userstore.AddUserWFRequestHandler;
-import org.wso2.carbon.user.mgt.workflow.userstore.DeleteMultipleClaimsWFRequestHandler;
-import org.wso2.carbon.user.mgt.workflow.userstore.DeleteRoleWFRequestHandler;
-import org.wso2.carbon.user.mgt.workflow.userstore.DeleteUserWFRequestHandler;
-import org.wso2.carbon.user.mgt.workflow.userstore.SetMultipleClaimsWFRequestHandler;
-import org.wso2.carbon.user.mgt.workflow.userstore.UpdateRoleNameWFRequestHandler;
-import org.wso2.carbon.user.mgt.workflow.userstore.UpdateRoleUsersWFRequestHandler;
-import org.wso2.carbon.user.mgt.workflow.userstore.UpdateUserRolesWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.UserStoreActionListener;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
@@ -67,17 +56,6 @@ public class IdentityWorkflowServiceComponent {
     protected void setConfigurationContextService(ConfigurationContextService contextService) {
 
         IdentityWorkflowDataHolder.getInstance().setConfigurationContextService(contextService);
-    }
-
-    @Reference(
-            name = "workflowservice.default",
-            service = org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService.class,
-            cardinality = ReferenceCardinality.MANDATORY,
-            policy = ReferencePolicy.DYNAMIC,
-            unbind = "unsetWorkflowService")
-    protected void setWorkflowService(WorkflowManagementService workflowService) {
-
-        IdentityWorkflowDataHolder.getInstance().setWorkflowService(workflowService);
     }
 
     @Reference(name = "user.management.error.event.listener.service",
@@ -118,24 +96,7 @@ public class IdentityWorkflowServiceComponent {
     protected void activate(ComponentContext context) {
 
         BundleContext bundleContext = context.getBundleContext();
-        bundleContext.registerService(UserOperationEventListener.class.getName(), new UserStoreActionListener(), null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new AddUserWFRequestHandler(), null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new AddRoleWFRequestHandler(), null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new DeleteUserWFRequestHandler(), null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new DeleteRoleWFRequestHandler(), null);
-        // todo: commenting out for a test failure
-        // bundleContext.registerService(WorkflowRequestHandler.class.getName(), new ChangeCredentialWFRequestHandler(),
-        // null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new
-                DeleteMultipleClaimsWFRequestHandler(), null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new SetMultipleClaimsWFRequestHandler()
-                , null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateUserRolesWFRequestHandler(),
-                null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateRoleUsersWFRequestHandler(),
-                null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateRoleNameWFRequestHandler(),
-                null);
+        bundleContext.registerService(UserOperationEventListener.class.getName(), new UserStoreActionListener(), null);;
         IdentityWorkflowDataHolder.getInstance().setBundleContext(bundleContext);
     }
 
@@ -147,10 +108,5 @@ public class IdentityWorkflowServiceComponent {
     protected void unsetConfigurationContextService(ConfigurationContextService contextService) {
 
         IdentityWorkflowDataHolder.getInstance().setConfigurationContextService(null);
-    }
-
-    protected void unsetWorkflowService(WorkflowManagementService workflowService) {
-
-        IdentityWorkflowDataHolder.getInstance().setWorkflowService(null);
     }
 }
