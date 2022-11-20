@@ -18,18 +18,6 @@
  -->
 
 <serviceGroup>
-    <service name="UserManagementWorkflowService" scope="transportsession">
-        <transports>
-            <transport>https</transport>
-        </transports>
-        <parameter name="ServiceClass" locked="true">
-            org.wso2.carbon.user.mgt.workflow.UserManagementWorkflowService
-        </parameter>
-        <parameter name="AuthorizationAction" locked="false">/permission/admin/manage</parameter>
-        <operation name="listAllEntityNames">
-            <parameter name="AuthorizationAction" locked="true">/permission/admin/login</parameter>
-        </operation>
-    </service>
     <parameter name="adminService" locked="true">true</parameter>
     <parameter name="hiddenService" locked="true">true</parameter>
 </serviceGroup>
