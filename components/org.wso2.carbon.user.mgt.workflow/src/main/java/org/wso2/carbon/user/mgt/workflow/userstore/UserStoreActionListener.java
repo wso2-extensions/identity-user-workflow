@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.identity.central.log.mgt.utils.LoggerUtils;
 import org.wso2.carbon.identity.core.AbstractIdentityUserOperationEventListener;
 import org.wso2.carbon.identity.core.util.IdentityCoreConstants;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
@@ -83,6 +84,9 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
         ValidationResult usernameValidationResult = isUsernameValid(userName, userStoreManager.getRealmConfiguration());
         if (!usernameValidationResult.isValid()  && !UserCoreUtil.getSkipUsernamePatternValidationThreadLocal()) {
             String errorCode = ERROR_CODE_INVALID_USER_NAME.getCode();
+            if (LoggerUtils.isLogMaskingEnable && StringUtils.isNotBlank(userName)) {
+                userName = LoggerUtils.getMaskedContent(userName);
+            }
             String errorMessage = String
                     .format(ERROR_CODE_INVALID_USER_NAME.getMessage(), UserCoreUtil.removeDomainFromName(userName),
                             usernameValidationResult.getRegExUsed());

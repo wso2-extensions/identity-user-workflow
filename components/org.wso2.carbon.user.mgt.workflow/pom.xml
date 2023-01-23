@@ -59,6 +59,10 @@
             <artifactId>org.apache.felix.scr.ds-annotations</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.central.log.mgt</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -101,6 +105,7 @@
                             org.wso2.carbon.identity.recovery.util; version="${identity.governance.package.import.version.range}",
                             org.wso2.carbon.identity.event.*; version="${carbon.identity.package.import.version.range}",
                             org.wso2.carbon.identity.password.policy.*;version="${identity.governance.package.import.version.range}",
+                            org.wso2.carbon.identity.central.log.mgt.utils; version="${carbon.identity.package.import.version.range}",
                         </Import-Package>
                         <Export-Package>
                             !org.wso2.carbon.user.mgt.workflow.internal;version="${identity.user.workflow.exp.pkg.version}",

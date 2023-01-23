@@ -129,6 +129,11 @@
                 <artifactId>org.wso2.carbon.identity.password.policy</artifactId>
                 <version>${identity.governance.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.identity.framework</groupId>
+                <artifactId>org.wso2.carbon.identity.central.log.mgt</artifactId>
+                <version>${identity.framework.version}</version>
+            </dependency>
 
             <!-- Pax Logging -->
             <dependency>
@@ -230,7 +235,7 @@
         <commons-cli.osgi.version>1.2.0.wso2v1</commons-cli.osgi.version>
 
         <!--Carbon identity version-->
-        <identity.framework.version>5.20.355</identity.framework.version>
+        <identity.framework.version>5.25.76</identity.framework.version>
         <carbon.identity.package.import.version.range>[5.14.67, 6.0.0)</carbon.identity.package.import.version.range>
         <identity.user.workflow.exp.pkg.version>${project.version}</identity.user.workflow.exp.pkg.version>
         <identity.governance.version>1.4.1</identity.governance.version>
