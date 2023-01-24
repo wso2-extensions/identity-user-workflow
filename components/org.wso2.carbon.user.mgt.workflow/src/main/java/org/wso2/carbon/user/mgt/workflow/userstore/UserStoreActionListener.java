@@ -84,14 +84,17 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
         ValidationResult usernameValidationResult = isUsernameValid(userName, userStoreManager.getRealmConfiguration());
         if (!usernameValidationResult.isValid()  && !UserCoreUtil.getSkipUsernamePatternValidationThreadLocal()) {
             String errorCode = ERROR_CODE_INVALID_USER_NAME.getCode();
-            if (LoggerUtils.isLogMaskingEnable && StringUtils.isNotBlank(userName)) {
-                userName = LoggerUtils.getMaskedContent(userName);
-            }
             String errorMessage = String
                     .format(ERROR_CODE_INVALID_USER_NAME.getMessage(), UserCoreUtil.removeDomainFromName(userName),
                             usernameValidationResult.getRegExUsed());
-
-            triggerAddUserFailureListeners(errorCode, errorMessage, userName, credential, roleList, claims, profile,
+            String maskedMessage = errorMessage;
+            if (LoggerUtils.isLogMaskingEnable && StringUtils.isNotBlank(userName)) {
+                maskedMessage = String
+                        .format(ERROR_CODE_INVALID_USER_NAME.getMessage(),
+                                LoggerUtils.getMaskedContent(UserCoreUtil.removeDomainFromName(userName)),
+                                usernameValidationResult.getRegExUsed());
+            }
+            triggerAddUserFailureListeners(errorCode, maskedMessage, userName, credential, roleList, claims, profile,
                     userStoreManager);
             throw new UserStoreException(errorCode + " - " + errorMessage);
         }
