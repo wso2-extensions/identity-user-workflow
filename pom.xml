@@ -80,9 +80,9 @@
                 <version>${commons-lang.wso2.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon.identity.framework</groupId>
+                <groupId>org.wso2.carbon.identity.workflow.impl.bps</groupId>
                 <artifactId>org.wso2.carbon.identity.workflow.mgt</artifactId>
-                <version>${identity.framework.version}</version>
+                <version>${identity.workflow.impl.bps.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.identity.governance</groupId>
@@ -215,6 +215,10 @@
         <carbon.kernel.package.import.version.range>[4.5.0, 5.0.0)</carbon.kernel.package.import.version.range>
         <osgi.framework.imp.pkg.version.range>[1.7.0, 2.0.0)</osgi.framework.imp.pkg.version.range>
         <osgi.service.component.imp.pkg.version.range>[1.2.0, 2.0.0)</osgi.service.component.imp.pkg.version.range>
+
+        <identity.workflow.impl.bps.version>5.5.6</identity.workflow.impl.bps.version>
+        <carbon.identity.workflow.impl.bps.package.import.version.range>[5.3.5, 6.0.0)
+        </carbon.identity.workflow.impl.bps.package.import.version.range>
 
         <!-- Axis2 Version -->
         <axis2.osgi.version.range>[1.6.1-wso2v38, 2.0.0)</axis2.osgi.version.range>
