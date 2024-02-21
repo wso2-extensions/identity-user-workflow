@@ -235,7 +235,7 @@
 
         <!--Carbon identity version-->
         <identity.framework.version>5.20.355</identity.framework.version>
-        <carbon.identity.package.import.version.range>[5.14.67, 6.0.0)</carbon.identity.package.import.version.range>
+        <carbon.identity.package.import.version.range>[5.14.67, 8.0.0)</carbon.identity.package.import.version.range>
         <identity.user.workflow.exp.pkg.version>${project.version}</identity.user.workflow.exp.pkg.version>
         <identity.governance.version>1.4.1</identity.governance.version>
         <identity.governance.package.import.version.range>[1.4.1, 2)</identity.governance.package.import.version.range>
