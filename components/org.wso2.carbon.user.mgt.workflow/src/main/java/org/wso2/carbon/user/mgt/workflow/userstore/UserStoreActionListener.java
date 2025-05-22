@@ -73,11 +73,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
         if (identityEventListenerConfig == null) {
             return false;
         }
-        if (StringUtils.isNotBlank(identityEventListenerConfig.getEnable())) {
-            return Boolean.parseBoolean(identityEventListenerConfig.getEnable());
-        } else {
-            return false;
-        }
+        return Boolean.parseBoolean(identityEventListenerConfig.getEnable());
     }
 
     @Override
