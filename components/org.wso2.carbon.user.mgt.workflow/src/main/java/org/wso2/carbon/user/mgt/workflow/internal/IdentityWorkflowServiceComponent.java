@@ -25,6 +25,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.event.services.IdentityEventService;
+import org.wso2.carbon.identity.role.v2.mgt.core.listener.RoleManagementListener;
 import org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService;
 import org.wso2.carbon.identity.workflow.mgt.extension.WorkflowRequestHandler;
 import org.wso2.carbon.user.core.listener.UserManagementErrorEventListener;
@@ -40,6 +41,7 @@ import org.wso2.carbon.user.mgt.workflow.userstore.UpdateRoleNameWFRequestHandle
 import org.wso2.carbon.user.mgt.workflow.userstore.UpdateRoleUsersWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.UpdateUserRolesWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.UserStoreActionListener;
+import org.wso2.carbon.user.mgt.workflow.userstore.RoleManagementActionListener;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
 @Component(
@@ -119,6 +121,7 @@ public class IdentityWorkflowServiceComponent {
 
         BundleContext bundleContext = context.getBundleContext();
         bundleContext.registerService(UserOperationEventListener.class.getName(), new UserStoreActionListener(), null);
+        bundleContext.registerService(RoleManagementListener.class.getName(), new RoleManagementActionListener(), null);
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new AddUserWFRequestHandler(), null);
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new AddRoleWFRequestHandler(), null);
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new DeleteUserWFRequestHandler(), null);
