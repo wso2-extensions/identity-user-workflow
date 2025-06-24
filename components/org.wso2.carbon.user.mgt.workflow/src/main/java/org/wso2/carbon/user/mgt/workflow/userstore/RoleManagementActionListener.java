@@ -30,13 +30,13 @@ import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowException;
 
 import java.util.List;
 
-public class RoleManagementActionListener extends AbstractRoleManagementListener{
-
+public class RoleManagementActionListener extends AbstractRoleManagementListener {
 
     @Override
     public boolean isEnable() {
-        IdentityEventListenerConfig identityEventListenerConfig = IdentityUtil.readEventListenerProperty
-                (RoleManagementListener.class.getName(), this.getClass().getName());
+
+        IdentityEventListenerConfig identityEventListenerConfig = IdentityUtil.readEventListenerProperty(
+                RoleManagementListener.class.getName(), this.getClass().getName());
         if (identityEventListenerConfig == null) {
             return false;
         }
@@ -45,6 +45,7 @@ public class RoleManagementActionListener extends AbstractRoleManagementListener
 
     @Override
     public int getDefaultOrderId() {
+
         int orderId = getExecutionOrderId();
         if (orderId != IdentityCoreConstants.EVENT_LISTENER_ORDER_ID) {
             return orderId;
@@ -52,47 +53,27 @@ public class RoleManagementActionListener extends AbstractRoleManagementListener
         return 10;
     }
 
-
     @Override
-    public void preAddRole(String roleName, List<String> userList, List<String> groupList, List<Permission> permissions, String audience, String audienceId, String tenantDomain) throws IdentityRoleManagementException {
+    public void preAddRole(String roleName, List<String> userList, List<String> groupList,
+                           List<Permission> permissions, String audience, String audienceId, String tenantDomain)
+            throws IdentityRoleManagementException {
 
         if (!isEnable()) {
             return;
         }
 
-        AddRoleWFRequestHandler addRoleWFRequestHandler = new AddRoleWFRequestHandler();
+        AddRoleV2WFRequestHandler addRoleWFRequestHandler = new AddRoleV2WFRequestHandler();
         try {
-            boolean state = addRoleWFRequestHandler.startAddRoleFlow(roleName, userList, groupList, permissions, audience, audienceId, tenantDomain);
+            boolean state = addRoleWFRequestHandler.startAddRoleFlow(roleName, userList, groupList, permissions,
+                    audience, audienceId, tenantDomain);
             // Throwing an exception if the workflow state is false, which indicates that the role creation request is
             // sent to the workflow engine for approval.
             if (!state) {
-                throw new IdentityRoleManagementException(RoleConstants.Error.ROLE_WORKFLOW_CREATED.getCode(), "Role creation request is sent to the workflow engine for approval.");
+                throw new IdentityRoleManagementException(RoleConstants.Error.ROLE_WORKFLOW_CREATED.getCode(), "Role " +
+                        "creation request is sent to the workflow engine for approval.");
             }
         } catch (WorkflowException e) {
             throw new IdentityRoleManagementException(e.getMessage(), e);
         }
-    }
-
-
-
-
-    @Override
-    public void preGetRolesCount(String searchFilter, String tenantDomain) throws IdentityRoleManagementException {
-        super.preGetRolesCount(searchFilter, tenantDomain);
-    }
-
-    @Override
-    public void postGetRolesCount(int count, String searchFilter, String tenantDomain) throws IdentityRoleManagementException {
-        super.postGetRolesCount(count, searchFilter, tenantDomain);
-    }
-
-    @Override
-    public void preGetPermissionListOfRoles(List<String> roleIds, String tenantDomain) throws IdentityRoleManagementException {
-        super.preGetPermissionListOfRoles(roleIds, tenantDomain);
-    }
-
-    @Override
-    public void postGetPermissionListOfRoles(List<String> permissions, List<String> roleIds, String tenantDomain) throws IdentityRoleManagementException {
-        super.postGetPermissionListOfRoles(permissions, roleIds, tenantDomain);
     }
 }

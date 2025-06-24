@@ -306,6 +306,34 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     }
 
     @Override
+    public boolean doPreAddRole(String roleName, String[] userList, Permission[] permissions, UserStoreManager
+            userStoreManager) throws UserStoreException {
+
+        if (!isEnable() || isCalledViaIdentityMgtListners()) {
+            return true;
+        }
+
+        try {
+            AddRoleWFRequestHandler addRoleWFRequestHandler = new AddRoleWFRequestHandler();
+            String domain = userStoreManager.getRealmConfiguration().getUserStoreProperty(UserCoreConstants.RealmConfig
+                    .PROPERTY_DOMAIN_NAME);
+
+            int tenantId = userStoreManager.getTenantId() ;
+            String currentUser = PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
+            PrivilegedCarbonContext.startTenantFlow();
+            PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId, true);
+            PrivilegedCarbonContext.getThreadLocalCarbonContext().setUsername(currentUser);
+
+            return addRoleWFRequestHandler.startAddRoleFlow(domain, roleName, userList, permissions);
+        } catch (WorkflowException e) {
+            // Sending e.getMessage() since it is required to give error message to end user.
+            throw new UserStoreException(e.getMessage(), e);
+        } finally {
+            PrivilegedCarbonContext.endTenantFlow();
+        }
+    }
+
+    @Override
     public boolean doPreAddInternalRoleWithID(String roleName, String[] userIDList, Permission[] permissions,
                                               UserStoreManager userStoreManager) throws UserStoreException {
 

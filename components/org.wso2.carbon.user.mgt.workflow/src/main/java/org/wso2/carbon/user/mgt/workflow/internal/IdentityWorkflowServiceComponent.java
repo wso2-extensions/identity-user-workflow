@@ -31,6 +31,7 @@ import org.wso2.carbon.identity.workflow.mgt.extension.WorkflowRequestHandler;
 import org.wso2.carbon.user.core.listener.UserManagementErrorEventListener;
 import org.wso2.carbon.user.core.listener.UserOperationEventListener;
 import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.carbon.user.mgt.workflow.userstore.AddRoleV2WFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.AddRoleWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.AddUserWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.DeleteMultipleClaimsWFRequestHandler;
@@ -124,6 +125,7 @@ public class IdentityWorkflowServiceComponent {
         bundleContext.registerService(RoleManagementListener.class.getName(), new RoleManagementActionListener(), null);
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new AddUserWFRequestHandler(), null);
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new AddRoleWFRequestHandler(), null);
+        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new AddRoleV2WFRequestHandler(), null);
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new DeleteUserWFRequestHandler(), null);
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new DeleteRoleWFRequestHandler(), null);
         // todo: commenting out for a test failure
