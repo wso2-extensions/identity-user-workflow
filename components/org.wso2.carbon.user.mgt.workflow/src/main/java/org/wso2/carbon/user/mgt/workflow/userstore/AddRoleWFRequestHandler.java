@@ -199,7 +199,7 @@ public class AddRoleWFRequestHandler extends AbstractWorkflowRequestHandler {
                 WorkflowRequestStatus.SKIPPED.toString().equals(status)) {
             try {
                 RoleDAO roleDAO = RoleMgtDAOFactory.getInstance().getRoleDAO();
-                RoleManagementUtils.validatePermissions(permissions, audience, audienceId, tenantDomain);
+                RoleManagementUtils.validatePermissions(permissions, audience, tenantDomain);
                 roleDAO.addRole(roleName, userList, groupList, permissions, audience,
                         audienceId, tenantDomain);
             } catch (IdentityRoleManagementException e) {
