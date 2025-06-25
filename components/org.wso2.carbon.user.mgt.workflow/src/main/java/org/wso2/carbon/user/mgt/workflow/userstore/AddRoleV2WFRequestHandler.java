@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -43,7 +43,13 @@ import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants;
 
-import java.util.*;
+
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.ArrayList;
 
 import static org.wso2.carbon.identity.role.v2.mgt.core.RoleConstants.APPLICATION;
 import static org.wso2.carbon.identity.role.v2.mgt.core.RoleConstants.Error.INVALID_AUDIENCE;
