@@ -43,7 +43,6 @@ import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants;
 
-
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -59,8 +58,7 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
 
     private static final String FRIENDLY_NAME = "Add Role";
     private static final String FRIENDLY_DESCRIPTION = "Triggered when a user create a new role.";
-
-    private static final String ROLENAME = "Role Name";
+    private static final String ROLE_NAME = "Role Name";
     private static final String USER_STORE_DOMAIN = "User Store Domain";
     private static final String PERMISSIONS = "Permissions";
     private static final String USER_LIST = "Users";
@@ -74,13 +72,15 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
 
     static {
         PARAM_DEFINITION = new LinkedHashMap<>();
-        PARAM_DEFINITION.put(ROLENAME, WorkflowDataType.STRING_TYPE);
+        PARAM_DEFINITION.put(ROLE_NAME, WorkflowDataType.STRING_TYPE);
         PARAM_DEFINITION.put(USER_STORE_DOMAIN, WorkflowDataType.STRING_TYPE);
         PARAM_DEFINITION.put(USER_LIST, WorkflowDataType.STRING_LIST_TYPE);
         PARAM_DEFINITION.put(PERMISSIONS, WorkflowDataType.STRING_LIST_TYPE);
     }
 
-    public boolean startAddRoleFlow(String roleName, List<String> userList, List<String> groupList, List<Permission> permissions, String audience, String audienceId, String tenantDomain)
+    public boolean startAddRoleFlow(String roleName, List<String> userList, List<String> groupList,
+                                    List<Permission> permissions, String audience, String audienceId,
+                                    String tenantDomain)
             throws WorkflowException {
 
         WorkflowManagementService workflowService = IdentityWorkflowDataHolder.getInstance().getWorkflowService();
@@ -88,7 +88,7 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
 
         Map<String, Object> wfParams = new HashMap<>();
         Map<String, Object> nonWfParams = new HashMap<>();
-        wfParams.put(ROLENAME, roleName);
+        wfParams.put(ROLE_NAME, roleName);
         wfParams.put(USER_LIST, userList);
         List<String> permissionNames = null;
         if (!permissions.isEmpty()) {
@@ -111,11 +111,10 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
 
         boolean state = startWorkFlow(wfParams, nonWfParams, uuid).getExecutorResultState().state();
 
-        //WF_REQUEST_ENTITY_RELATIONSHIP table has foreign key to WF_REQUEST, so need to run this after WF_REQUEST is
-        // updated
+        // WF_REQUEST_ENTITY_RELATIONSHIP table has foreign key to WF_REQUEST, so need to run this after WF_REQUEST is
+        // updated.
         if (!Boolean.TRUE.equals(getWorkFlowCompleted()) && !state) {
             try {
-
                 workflowService.addRequestEntityRelationships(uuid, entities);
             } catch (InternalWorkflowException e) {
                 //debug exception which occurs at DB level since no workflows associated with event
@@ -161,7 +160,7 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
     public void onWorkflowCompletion(String status, Map<String, Object> requestParams, Map<String, Object>
             responseAdditionalParams, int tenantId) throws WorkflowException {
 
-        String roleName = (String) requestParams.get(ROLENAME);
+        String roleName = (String) requestParams.get(ROLE_NAME);
         if (roleName == null) {
             throw new WorkflowException("Callback request for Add role received without the mandatory " +
                     "parameter 'roleName'");
@@ -246,7 +245,8 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
                         .entityHasPendingWorkflowsOfType(entity, UserStoreWFConstants.ADD_ROLE_EVENT) ||
                         workflowService.entityHasPendingWorkflowsOfType(entity, UserStoreWFConstants
                                 .UPDATE_ROLE_NAME_EVENT) ||
-                        roleDAO.isExistingRoleID(entity.getEntityId(), CarbonContext.getThreadLocalCarbonContext().getTenantDomain()))) {
+                        roleDAO.isExistingRoleID(entity.getEntityId(),
+                                CarbonContext.getThreadLocalCarbonContext().getTenantDomain()))) {
                     throw new WorkflowException("Role name already exists in the system. Please pick another role " +
                             "name.");
                 } else if (workflowService.isEventAssociated(UserStoreWFConstants.ADD_USER_EVENT) &&
