@@ -18,16 +18,12 @@
 
 package org.wso2.carbon.user.mgt.workflow.userstore;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
-import org.wso2.carbon.identity.role.v2.mgt.core.dao.RoleDAO;
-import org.wso2.carbon.identity.role.v2.mgt.core.dao.RoleMgtDAOFactory;
-import org.wso2.carbon.identity.role.v2.mgt.core.exception.IdentityRoleManagementClientException;
+import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
 import org.wso2.carbon.identity.role.v2.mgt.core.exception.IdentityRoleManagementException;
-import org.wso2.carbon.identity.role.v2.mgt.core.util.RoleManagementUtils;
 import org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService;
 import org.wso2.carbon.identity.workflow.mgt.bean.Entity;
 import org.wso2.carbon.identity.workflow.mgt.exception.InternalWorkflowException;
@@ -50,16 +46,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.ArrayList;
 
-import static org.wso2.carbon.identity.role.v2.mgt.core.RoleConstants.APPLICATION;
-import static org.wso2.carbon.identity.role.v2.mgt.core.RoleConstants.Error.INVALID_AUDIENCE;
-import static org.wso2.carbon.identity.role.v2.mgt.core.RoleConstants.ORGANIZATION;
-
 public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
 
     private static final String FRIENDLY_NAME = "Add Role";
     private static final String FRIENDLY_DESCRIPTION = "Triggered when a user create a new role.";
     private static final String ROLE_NAME = "Role Name";
-    private static final String USER_STORE_DOMAIN = "User Store Domain";
     private static final String PERMISSIONS = "Permissions";
     private static final String USER_LIST = "Users";
     private static final String GROUPS_LIST = "Groups";
@@ -73,9 +64,12 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
     static {
         PARAM_DEFINITION = new LinkedHashMap<>();
         PARAM_DEFINITION.put(ROLE_NAME, WorkflowDataType.STRING_TYPE);
-        PARAM_DEFINITION.put(USER_STORE_DOMAIN, WorkflowDataType.STRING_TYPE);
         PARAM_DEFINITION.put(USER_LIST, WorkflowDataType.STRING_LIST_TYPE);
+        PARAM_DEFINITION.put(GROUPS_LIST, WorkflowDataType.STRING_LIST_TYPE);
         PARAM_DEFINITION.put(PERMISSIONS, WorkflowDataType.STRING_LIST_TYPE);
+        PARAM_DEFINITION.put(AUDIENCE, WorkflowDataType.STRING_TYPE);
+        PARAM_DEFINITION.put(AUDIENCE_ID, WorkflowDataType.STRING_TYPE);
+        PARAM_DEFINITION.put(TENANT_DOMAIN, WorkflowDataType.STRING_TYPE);
     }
 
     public boolean startAddRoleFlow(String roleName, List<String> userList, List<String> groupList,
@@ -90,7 +84,7 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
         Map<String, Object> nonWfParams = new HashMap<>();
         wfParams.put(ROLE_NAME, roleName);
         wfParams.put(USER_LIST, userList);
-        List<String> permissionNames = null;
+        List<String> permissionNames = new ArrayList<>();
         if (!permissions.isEmpty()) {
             permissionNames = getPermissionNames(permissions);
         }
@@ -172,41 +166,16 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
         List<String> userList = (List<String>) requestParams.get(USER_LIST);
         List<String> groupList = (List<String>) requestParams.get(GROUPS_LIST);
         List<String> permissionNames = (List<String>) requestParams.get(PERMISSIONS);
-        List<Permission> permissions = null;
+        List<Permission> permissions = new ArrayList<>();
         if (permissionNames != null) {
             permissions = getPermissionsFromNames(permissionNames);
-        }
-
-        // Validate the audience.
-        try {
-            if (StringUtils.isNotEmpty(audience)) {
-                if (!(ORGANIZATION.equalsIgnoreCase(audience) || APPLICATION.equalsIgnoreCase(audience))) {
-                    throw new IdentityRoleManagementClientException(INVALID_AUDIENCE.getCode(),
-                            "Invalid role audience");
-                }
-                if (ORGANIZATION.equalsIgnoreCase(audience)) {
-                    RoleManagementUtils.validateOrganizationRoleAudience(audienceId, tenantDomain);
-                    audience = ORGANIZATION;
-                }
-                if (APPLICATION.equalsIgnoreCase(audience)) {
-                    // audience validation done using listener.
-                    audience = APPLICATION;
-                }
-            } else {
-                audience = ORGANIZATION;
-                audienceId = RoleManagementUtils.getOrganizationIdByTenantDomain(tenantDomain);
-            }
-        } catch (IdentityRoleManagementException e) {
-            throw new WorkflowException("Error while validating role audience: " + e.getMessage(), e);
         }
 
         if (WorkflowRequestStatus.APPROVED.toString().equals(status) ||
                 WorkflowRequestStatus.SKIPPED.toString().equals(status)) {
             try {
-                RoleDAO roleDAO = RoleMgtDAOFactory.getInstance().getRoleDAO();
-                RoleManagementUtils.validatePermissions(permissions, audience, tenantDomain);
-                roleDAO.addRole(roleName, userList, groupList, permissions, audience,
-                        audienceId, tenantDomain);
+                IdentityWorkflowDataHolder.getInstance().getRoleManagementService().addRole(roleName, userList,
+                        groupList, permissions, audience, audienceId, tenantDomain);
             } catch (IdentityRoleManagementException e) {
                 throw new WorkflowException("Error while creating the role", e);
             }
@@ -230,29 +199,33 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
         RealmService realmService = IdentityWorkflowDataHolder.getInstance().getRealmService();
         UserRealm userRealm;
         AbstractUserStoreManager userStoreManager;
-        RoleDAO roleDAO;
+        RoleManagementService roleManagementService = IdentityWorkflowDataHolder.getInstance()
+                .getRoleManagementService();
         try {
             userRealm = realmService.getTenantUserRealm(PrivilegedCarbonContext.getThreadLocalCarbonContext()
                     .getTenantId());
             userStoreManager = (AbstractUserStoreManager) userRealm.getUserStoreManager();
-            roleDAO = RoleMgtDAOFactory.getInstance().getRoleDAO();
         } catch (UserStoreException e) {
             throw new WorkflowException("Error while retrieving user realm.", e);
         }
         for (Entity entity : entities) {
             try {
+                // Check if the entity is a role and if it has pending workflows of type ADD_ROLE_EVENT or
+                // UPDATE_ROLE_NAME_EVENT, or if the role already exists in the system.
                 if (UserStoreWFConstants.ENTITY_TYPE_ROLE.equals(entity.getEntityType()) && (workflowService
                         .entityHasPendingWorkflowsOfType(entity, UserStoreWFConstants.ADD_ROLE_EVENT) ||
                         workflowService.entityHasPendingWorkflowsOfType(entity, UserStoreWFConstants
                                 .UPDATE_ROLE_NAME_EVENT) ||
-                        roleDAO.isExistingRoleID(entity.getEntityId(),
+                        roleManagementService.isExistingRole(entity.getEntityId(),
                                 CarbonContext.getThreadLocalCarbonContext().getTenantDomain()))) {
-                    throw new WorkflowException("Role name already exists in the system. Please pick another role " +
-                            "name.");
+                    throw new WorkflowException("Role name already exists in the system or rolename is already in the" +
+                            " role creation/update approval. Please pick another role name.");
+                    // Check if user already in the add/delete user pending workflow.
                 } else if (workflowService.isEventAssociated(UserStoreWFConstants.ADD_USER_EVENT) &&
                         UserStoreWFConstants.ENTITY_TYPE_USER.equals(entity.getEntityType()) && workflowService
                         .entityHasPendingWorkflowsOfType(entity, UserStoreWFConstants.DELETE_USER_EVENT)) {
                     throw new WorkflowException("One or more assigned users are pending in delete workflow.");
+                    // If user does not exist in the pending workflow, user should exist in the user  store.
                 } else if (UserStoreWFConstants.ENTITY_TYPE_USER.equals(entity.getEntityType()) &&
                         !userStoreManager.isExistingUserWithID(entity.getEntityId())) {
                     throw new WorkflowException("User " + entity.getEntityId() + " does not exist.");
