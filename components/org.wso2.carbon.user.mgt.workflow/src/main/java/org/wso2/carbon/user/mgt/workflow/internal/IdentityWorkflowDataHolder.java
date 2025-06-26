@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2015-2025, WSO2 LLC. (http://www.wso2.com).
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
+ * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,6 +20,7 @@ package org.wso2.carbon.user.mgt.workflow.internal;
 
 import org.osgi.framework.BundleContext;
 import org.wso2.carbon.identity.event.services.IdentityEventService;
+import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
 import org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService;
 import org.wso2.carbon.user.core.listener.UserManagementErrorEventListener;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -38,6 +39,7 @@ public class IdentityWorkflowDataHolder {
     private BundleContext bundleContext;
     private WorkflowManagementService workflowService;
     private IdentityEventService identityEventService;
+    private RoleManagementService roleManagementService;
     private Map<Integer, UserManagementErrorEventListener> errorEventListenerMap =  new TreeMap<>();
 
     public static IdentityWorkflowDataHolder getInstance() {
@@ -115,5 +117,15 @@ public class IdentityWorkflowDataHolder {
     public void setIdentityEventService(IdentityEventService eventMgtService) {
 
         this.identityEventService = eventMgtService;
+    }
+
+    public RoleManagementService getRoleManagementService() {
+
+        return roleManagementService;
+    }
+
+    public void setRoleManagementService(RoleManagementService roleManagementService) {
+
+        this.roleManagementService = roleManagementService;
     }
 }

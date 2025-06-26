@@ -85,6 +85,11 @@
                 <version>${identity.framework.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.identity.framework</groupId>
+                <artifactId>org.wso2.carbon.identity.role.v2.mgt.core</artifactId>
+                <version>${identity.framework.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.carbon.identity.governance</groupId>
                 <artifactId>org.wso2.carbon.identity.recovery</artifactId>
                 <version>${identity.governance.version}</version>
@@ -297,7 +302,7 @@
         <commons-cli.osgi.version>1.2.0.wso2v1</commons-cli.osgi.version>
 
         <!--Carbon identity version-->
-        <identity.framework.version>7.8.158</identity.framework.version>
+        <identity.framework.version>7.8.245</identity.framework.version>
         <carbon.identity.package.import.version.range>[5.14.67, 8.0.0)</carbon.identity.package.import.version.range>
         <identity.user.workflow.exp.pkg.version>${project.version}</identity.user.workflow.exp.pkg.version>
         <identity.governance.version>1.4.1</identity.governance.version>

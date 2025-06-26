@@ -316,7 +316,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
         try {
             AddRoleWFRequestHandler addRoleWFRequestHandler = new AddRoleWFRequestHandler();
             String domain = userStoreManager.getRealmConfiguration().getUserStoreProperty(UserCoreConstants.RealmConfig
-                                                                                                  .PROPERTY_DOMAIN_NAME);
+                    .PROPERTY_DOMAIN_NAME);
 
             int tenantId = userStoreManager.getTenantId() ;
             String currentUser = PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
