@@ -25,7 +25,6 @@ import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.core.util.CryptoException;
 import org.wso2.carbon.core.util.CryptoUtil;
-import org.wso2.carbon.identity.core.util.IdentityCoreConstants;
 import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
 import org.wso2.carbon.identity.role.v2.mgt.core.exception.IdentityRoleManagementException;
 import org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService;
@@ -34,7 +33,6 @@ import org.wso2.carbon.identity.workflow.mgt.exception.InternalWorkflowException
 import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowException;
 import org.wso2.carbon.identity.workflow.mgt.extension.AbstractWorkflowRequestHandler;
 import org.wso2.carbon.identity.workflow.mgt.util.WorkflowDataType;
-import org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants;
 import org.wso2.carbon.identity.workflow.mgt.util.WorkflowRequestStatus;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
@@ -53,11 +51,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_ROLE_WF_ALREADY_EXISTS;
-import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_ROLE_WF_ROLE_NOT_FOUND;
 import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_ALREADY_EXISTS;
 import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_ROLE_NOT_FOUND;
-import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_ROLE_PENDING_APPROVAL;
+import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_ROLE_PENDING_DELETION;
 import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_USER_ALREADY_EXISTS;
 import static org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils.getSelfRegistrationArbitraryProperties;
 import static org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils.setSelfRegistrationArbitraryProperties;
@@ -312,6 +308,7 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
                     if (userStoreManager.isExistingUser(entity.getEntityId())) {
                         throw new WorkflowException(ERROR_CODE_USER_WF_USER_ALREADY_EXISTS.getMessage(),
                                 ERROR_CODE_USER_WF_USER_ALREADY_EXISTS.getCode());
+                    // Check if user already exists in pending add user workflow.
                     } else if (workflowService
                             .entityHasPendingWorkflowsOfType(entity, UserStoreWFConstants.ADD_USER_EVENT)) {
                         throw new WorkflowException(ERROR_CODE_USER_WF_ALREADY_EXISTS.getMessage(),
@@ -326,13 +323,14 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
                         throw new WorkflowException(String.format(ERROR_CODE_USER_WF_ROLE_NOT_FOUND.getMessage(),
                                 entity.getEntityId()),
                                 ERROR_CODE_USER_WF_ROLE_NOT_FOUND.getCode());
+                    // Check if assigned role exists in the pending delete/update role  workflow.
                     } else if (workflowService.entityHasPendingWorkflowsOfType(entity,
                             UserStoreWFConstants.DELETE_ROLE_EVENT) ||
                             workflowService.entityHasPendingWorkflowsOfType(entity,
                                     UserStoreWFConstants.UPDATE_ROLE_NAME_EVENT)) {
-                        throw new WorkflowException(String.format(ERROR_CODE_USER_WF_ROLE_PENDING_APPROVAL.getMessage(),
+                        throw new WorkflowException(String.format(ERROR_CODE_USER_WF_ROLE_PENDING_DELETION.getMessage(),
                                 entity.getEntityId()),
-                                ERROR_CODE_USER_WF_ROLE_PENDING_APPROVAL.getCode());
+                                ERROR_CODE_USER_WF_ROLE_PENDING_DELETION.getCode());
                     }
                 }
             } catch (InternalWorkflowException | org.wso2.carbon.user.core.UserStoreException |
