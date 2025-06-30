@@ -91,7 +91,7 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
             throws WorkflowException, IdentityRoleManagementException {
 
         WorkflowManagementService workflowService = IdentityWorkflowDataHolder.getInstance().getWorkflowService();
-        int tenantId = CarbonContext.getThreadLocalCarbonContext().getTenantId();
+        int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
 
         Map<String, Object> wfParams = new HashMap<>();
         Map<String, Object> nonWfParams = new HashMap<>();
