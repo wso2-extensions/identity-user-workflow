@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.role.v2.mgt.core.RoleConstants;
 import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
 import org.wso2.carbon.identity.role.v2.mgt.core.exception.IdentityRoleManagementException;
@@ -41,6 +42,7 @@ import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.identity.role.v2.mgt.core.model.Permission;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants;
 
@@ -113,11 +115,10 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
         wfParams.put(TENANT_DOMAIN, tenantDomain);
         String uuid = UUID.randomUUID().toString();
         RoleEntity[] entities = new RoleEntity[userList.size() + 1];
-        entities[0] = new RoleEntity(roleName, UserStoreWFConstants.ENTITY_TYPE_ROLE, tenantId, tenantDomain, audience,
+        entities[0] = new RoleEntity(roleName, UserStoreWFConstants.ENTITY_TYPE_ROLE, tenantId, audience,
                 audienceId);
         for (int i = 0; i < userList.size(); i++) {
-            entities[i + 1] = new RoleEntity(userList.get(i), UserStoreWFConstants.ENTITY_TYPE_USER, tenantId,
-                    tenantDomain, audience, audienceId);
+            entities[i + 1] = new RoleEntity(userList.get(i), UserStoreWFConstants.ENTITY_TYPE_USER, tenantId, audience, audienceId);
         }
         if (!Boolean.TRUE.equals(getWorkFlowCompleted()) && !isValidOperation(entities)) {
             throw new WorkflowException("Operation is not valid");
@@ -243,7 +244,8 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
                                 WorkflowErrorConstants.ErrorMessages.ERROR_CODE_ROLE_WF_ALREADY_EXISTS.getCode());
                     // Check if the role name already exists in the system.
                     } else if (roleManagementService.isExistingRoleName(roleEntity.getEntityId(),
-                            roleEntity.getAudience(), roleEntity.getAudienceId(), roleEntity.getTenantDomain())) {
+                            roleEntity.getAudience(), roleEntity.getAudienceId(),
+                            IdentityTenantUtil.getTenantDomain(roleEntity.getTenantId()))) {
                         throw new WorkflowException(ERROR_CODE_ROLE_WF_ROLE_ALREADY_EXISTS.getMessage(),
                                 ERROR_CODE_ROLE_WF_ROLE_ALREADY_EXISTS.getCode());
                     }
