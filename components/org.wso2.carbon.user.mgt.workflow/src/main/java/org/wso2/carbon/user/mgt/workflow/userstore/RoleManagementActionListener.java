@@ -73,7 +73,7 @@ public class RoleManagementActionListener extends AbstractRoleManagementListener
                         "creation request is sent to the workflow engine for approval.");
             }
         } catch (WorkflowException e) {
-            throw new IdentityRoleManagementException(e.getMessage(), e);
+            throw new IdentityRoleManagementException(e.getErrorCode(), e.getMessage(), e);
         }
     }
 }
