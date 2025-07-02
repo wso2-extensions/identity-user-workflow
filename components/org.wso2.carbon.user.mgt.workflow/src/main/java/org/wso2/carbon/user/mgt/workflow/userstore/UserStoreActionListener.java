@@ -31,8 +31,6 @@ import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.services.IdentityEventService;
 import org.wso2.carbon.identity.password.policy.constants.PasswordPolicyConstants;
-import org.wso2.carbon.identity.role.v2.mgt.core.RoleConstants;
-import org.wso2.carbon.identity.role.v2.mgt.core.exception.IdentityRoleManagementException;
 import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowException;
 import org.wso2.carbon.user.api.Permission;
 import org.wso2.carbon.user.api.TenantManager;
