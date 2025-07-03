@@ -42,6 +42,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
+import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_ALREADY_EXISTS;
+import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_USER_NOT_FOUND;
 
 public class DeleteUserWFRequestHandler extends AbstractWorkflowRequestHandler {
 
@@ -180,14 +182,16 @@ public class DeleteUserWFRequestHandler extends AbstractWorkflowRequestHandler {
         } catch (UserStoreException e) {
             throw new WorkflowException("Error while retrieving user realm.", e);
         }
-        for (int i = 0; i < entities.length; i++) {
+        for (Entity entity : entities) {
             try {
-                if (UserStoreWFConstants.ENTITY_TYPE_USER.equals(entities[i].getEntityType()) && workflowService
-                        .entityHasPendingWorkflows(entities[i])) {
-                    throw new WorkflowException("User has pending workflows which blocks this operation.");
-                } else if (UserStoreWFConstants.ENTITY_TYPE_USER.equals(entities[i].getEntityType()) &&
-                        !userStoreManager.isExistingUser(entities[i].getEntityId())) {
-                    throw new WorkflowException("User does not exist.");
+                if (UserStoreWFConstants.ENTITY_TYPE_USER.equals(entity.getEntityType()) && workflowService
+                        .entityHasPendingWorkflows(entity)) {
+                    throw new WorkflowException(ERROR_CODE_USER_WF_ALREADY_EXISTS.getMessage(),
+                            ERROR_CODE_USER_WF_ALREADY_EXISTS.getCode());
+                } else if (UserStoreWFConstants.ENTITY_TYPE_USER.equals(entity.getEntityType()) &&
+                        !userStoreManager.isExistingUser(entity.getEntityId())) {
+                    throw new WorkflowException(ERROR_CODE_USER_WF_USER_NOT_FOUND.getMessage(),
+                            ERROR_CODE_USER_WF_USER_NOT_FOUND.getCode());
                 }
             } catch (InternalWorkflowException | org.wso2.carbon.user.core.UserStoreException e) {
                 throw new WorkflowException(e.getMessage(), e);

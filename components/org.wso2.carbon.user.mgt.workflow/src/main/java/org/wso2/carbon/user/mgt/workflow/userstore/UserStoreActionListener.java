@@ -187,8 +187,8 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
             }
             return true;
         } catch (WorkflowException e) {
-            // Sending e.getMessage() since it is required to give error message to end user.
-            throw new UserStoreException(e.getMessage(), e);
+            // Sending the error message and the code to identify the validation failures.
+            throw new UserStoreException(e.getMessage(),e.getErrorCode(), e);
         } finally {
             PrivilegedCarbonContext.endTenantFlow();
         }
