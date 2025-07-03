@@ -183,7 +183,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
             boolean state = deleteUserWFRequestHandler.startDeleteUserFlow(domain, userName);
             if (!state) {
                 throw new UserStoreException("User deletion request is sent to the workflow engine for approval.",
-                        UserCoreConstants.ErrorCode.USER_DELETION_WORKFLOW_CREATED );
+                        UserCoreConstants.ErrorCode.USER_DELETION_WORKFLOW_CREATED);
             }
             return true;
         } catch (WorkflowException e) {
