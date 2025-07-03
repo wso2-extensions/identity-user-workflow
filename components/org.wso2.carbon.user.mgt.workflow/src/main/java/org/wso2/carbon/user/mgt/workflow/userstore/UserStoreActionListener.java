@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2015-2025, WSO2 LLC. (http://www.wso2.com).
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
+ * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
@@ -180,10 +180,15 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId, true);
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setUsername(currentUser);
 
-            return deleteUserWFRequestHandler.startDeleteUserFlow(domain, userName);
+            boolean state = deleteUserWFRequestHandler.startDeleteUserFlow(domain, userName);
+            if (!state) {
+                throw new UserStoreException("User deletion request is sent to the workflow engine for approval.",
+                        UserCoreConstants.ErrorCode.USER_DELETION_WORKFLOW_CREATED);
+            }
+            return true;
         } catch (WorkflowException e) {
-            // Sending e.getMessage() since it is required to give error message to end user.
-            throw new UserStoreException(e.getMessage(), e);
+            // Sending the error message and the code to identify the validation failures.
+            throw new UserStoreException(e.getMessage(),e.getErrorCode(), e);
         } finally {
             PrivilegedCarbonContext.endTenantFlow();
         }
