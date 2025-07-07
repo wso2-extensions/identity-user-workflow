@@ -147,8 +147,8 @@ public class IdentityWorkflowServiceComponent {
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new AddRoleV2WFRequestHandler(), null);
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new DeleteUserWFRequestHandler(), null);
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new DeleteRoleWFRequestHandler(), null);
-        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateRoleV2UsersWFRequestHandler()
-                , null);
+        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateRoleV2UsersWFRequestHandler(),
+                null);
         // todo: commenting out for a test failure
         // bundleContext.registerService(WorkflowRequestHandler.class.getName(), new ChangeCredentialWFRequestHandler(),
         // null);

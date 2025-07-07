@@ -60,8 +60,7 @@ public class UpdateRoleV2UsersWFRequestHandler extends AbstractWorkflowRequestHa
     private static final String NEW_USER_ID_LIST = "Users to be Added";
     private static final String DELETED_USER_ID_LIST = "Users to be Deleted";
     private static final String TENANT_DOMAIN = "Tenant Domain";
-
-
+    
     private static final Map<String, String> PARAM_DEFINITION;
     private static final Log log = LogFactory.getLog(UpdateRoleV2UsersWFRequestHandler.class);
 
