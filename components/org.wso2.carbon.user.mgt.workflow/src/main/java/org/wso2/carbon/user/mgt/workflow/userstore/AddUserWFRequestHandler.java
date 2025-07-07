@@ -50,6 +50,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils;
 
 import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_ALREADY_EXISTS;
 import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_ROLE_NOT_FOUND;
@@ -288,18 +289,10 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
         if (!workflowService.isEventAssociated(UserStoreWFConstants.ADD_USER_EVENT)) {
             return true;
         }
-        RealmService realmService = IdentityWorkflowDataHolder.getInstance().getRealmService();
-        UserRealm userRealm;
-        AbstractUserStoreManager userStoreManager;
+        AbstractUserStoreManager userStoreManager = UserStoreWFUtils.getUserStoreManager();
         RoleManagementService roleManagementService = IdentityWorkflowDataHolder.getInstance()
                 .getRoleManagementService();
-        try {
-            userRealm = realmService.getTenantUserRealm(PrivilegedCarbonContext.getThreadLocalCarbonContext()
-                    .getTenantId());
-            userStoreManager = (AbstractUserStoreManager) userRealm.getUserStoreManager();
-        } catch (UserStoreException e) {
-            throw new WorkflowException("Error while retrieving user realm.", e);
-        }
+
         for (Entity entity : entities) {
             try {
                 // User related validations.

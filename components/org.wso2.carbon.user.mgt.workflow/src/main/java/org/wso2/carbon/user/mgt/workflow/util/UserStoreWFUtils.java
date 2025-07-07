@@ -22,13 +22,18 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.CarbonConstants;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.recovery.model.Property;
 import org.wso2.carbon.identity.recovery.util.Utils;
+import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowException;
 import org.wso2.carbon.user.api.RealmConfiguration;
+import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.listener.UserManagementErrorEventListener;
+import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 import org.wso2.carbon.utils.Secret;
 import org.wso2.carbon.utils.UnsupportedSecretTypeException;
@@ -228,5 +233,25 @@ public class UserStoreWFUtils {
 
         Utils.clearArbitraryProperties();
         Utils.setArbitraryProperties(properties.toArray(new Property[0]));
+    }
+
+    /**
+     * Get the user store manager.
+     *
+     * @return user store manager
+     * @throws WorkflowException if error while retrieving user realm
+     */
+    public static AbstractUserStoreManager getUserStoreManager() throws WorkflowException {
+        RealmService realmService = IdentityWorkflowDataHolder.getInstance().getRealmService();
+        UserRealm userRealm;
+        AbstractUserStoreManager userStoreManager;
+        try {
+            userRealm = realmService.getTenantUserRealm(PrivilegedCarbonContext.getThreadLocalCarbonContext()
+                    .getTenantId());
+            userStoreManager = (AbstractUserStoreManager) userRealm.getUserStoreManager();
+        } catch (org.wso2.carbon.user.api.UserStoreException e) {
+            throw new WorkflowException("Error while retrieving user realm.", e);
+        }
+        return userStoreManager;
     }
 }
