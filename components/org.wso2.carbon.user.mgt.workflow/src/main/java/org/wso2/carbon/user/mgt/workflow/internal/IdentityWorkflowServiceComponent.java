@@ -42,6 +42,7 @@ import org.wso2.carbon.user.mgt.workflow.userstore.DeleteUserWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.SetMultipleClaimsWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.UpdateRoleNameWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.UpdateRoleUsersWFRequestHandler;
+import org.wso2.carbon.user.mgt.workflow.userstore.UpdateRoleV2UsersWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.UpdateUserRolesWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.UserStoreActionListener;
 import org.wso2.carbon.user.mgt.workflow.userstore.RoleManagementActionListener;
@@ -146,6 +147,8 @@ public class IdentityWorkflowServiceComponent {
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new AddRoleV2WFRequestHandler(), null);
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new DeleteUserWFRequestHandler(), null);
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new DeleteRoleWFRequestHandler(), null);
+        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateRoleV2UsersWFRequestHandler(),
+                null);
         // todo: commenting out for a test failure
         // bundleContext.registerService(WorkflowRequestHandler.class.getName(), new ChangeCredentialWFRequestHandler(),
         // null);

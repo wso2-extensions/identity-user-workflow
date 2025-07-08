@@ -76,4 +76,26 @@ public class RoleManagementActionListener extends AbstractRoleManagementListener
             throw new IdentityRoleManagementException(e.getErrorCode(), e.getMessage(), e);
         }
     }
+
+    @Override
+    public void preUpdateUserListOfRole(String roleId, List<String> newUserIDList, List<String> deletedUserIDList,
+                                        String tenantDomain) throws IdentityRoleManagementException {
+        if (!isEnable()) {
+            return;
+        }
+
+        UpdateRoleV2UsersWFRequestHandler addRoleWFRequestHandler = new UpdateRoleV2UsersWFRequestHandler();
+        try {
+            boolean state = addRoleWFRequestHandler.startUpdateRoleUsersFlow(roleId, newUserIDList,
+                    deletedUserIDList, tenantDomain);
+            // Throwing an exception if the workflow state is false, which indicates that the role update request is
+            // sent to the workflow engine for approval.
+            if (!state) {
+                throw new IdentityRoleManagementException(RoleConstants.Error.ROLE_WORKFLOW_CREATED.getCode(),
+                        "Role update request is sent to the workflow engine for approval.");
+            }
+        } catch (WorkflowException e) {
+            throw new IdentityRoleManagementException(e.getErrorCode(), e.getMessage(), e);
+        }
+    }
 }

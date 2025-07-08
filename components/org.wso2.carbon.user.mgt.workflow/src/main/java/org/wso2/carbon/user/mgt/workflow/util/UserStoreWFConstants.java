@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2015-2025, WSO2 LLC. (http://www.wso2.com).
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
+ * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,6 +35,7 @@ public class UserStoreWFConstants {
     public static final String DELETE_MULTIPLE_USER_CLAIMS_EVENT = "DELETE_MULTIPLE_USER_CLAIMS";
     public static final String UPDATE_USER_ROLES_EVENT = "UPDATE_USER_ROLES";
     public static final String UPDATE_ROLE_USERS_EVENT = "UPDATE_ROLE_USERS";
+    public static final String UPDATE_ROLE_V2_USERS_EVENT = "UPDATE_ROLES_OF_USERS";
 
     public static final String ENTITY_TYPE_USER = "USER";
     public static final String ENTITY_TYPE_ROLE = "ROLE";

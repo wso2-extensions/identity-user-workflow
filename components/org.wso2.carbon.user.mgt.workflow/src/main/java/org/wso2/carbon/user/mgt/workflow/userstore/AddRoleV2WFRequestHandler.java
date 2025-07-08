@@ -21,7 +21,6 @@ package org.wso2.carbon.user.mgt.workflow.userstore;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.role.v2.mgt.core.RoleConstants;
@@ -50,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.ArrayList;
+import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils;
 
 import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_ROLE_WF_PENDING_ALREADY_EXISTS;
 import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.
@@ -218,18 +218,11 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
         if (!workflowService.isEventAssociated(UserStoreWFConstants.ADD_ROLE_EVENT)) {
             return true;
         }
-        RealmService realmService = IdentityWorkflowDataHolder.getInstance().getRealmService();
-        UserRealm userRealm;
-        AbstractUserStoreManager userStoreManager;
+
+        AbstractUserStoreManager userStoreManager = UserStoreWFUtils.getUserStoreManager();
         RoleManagementService roleManagementService = IdentityWorkflowDataHolder.getInstance()
                 .getRoleManagementService();
-        try {
-            userRealm = realmService.getTenantUserRealm(PrivilegedCarbonContext.getThreadLocalCarbonContext()
-                    .getTenantId());
-            userStoreManager = (AbstractUserStoreManager) userRealm.getUserStoreManager();
-        } catch (UserStoreException e) {
-            throw new WorkflowException("Error while retrieving user realm.", e);
-        }
+
         for (Entity entity : entities) {
             RoleEntity roleEntity = (RoleEntity) entity;
             try {
