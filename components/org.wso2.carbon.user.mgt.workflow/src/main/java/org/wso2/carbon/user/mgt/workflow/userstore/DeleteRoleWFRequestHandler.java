@@ -43,6 +43,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Delete Role workflow request handler.
+ */
 public class DeleteRoleWFRequestHandler extends AbstractWorkflowRequestHandler {
 
     private static final String FRIENDLY_NAME = "Delete Role";

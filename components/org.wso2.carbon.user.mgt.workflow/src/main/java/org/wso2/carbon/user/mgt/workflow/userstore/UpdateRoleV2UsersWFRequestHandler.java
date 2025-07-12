@@ -15,10 +15,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.wso2.carbon.user.mgt.workflow.userstore;
 
-import java.util.ArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.CarbonContext;
@@ -35,22 +33,23 @@ import org.wso2.carbon.identity.workflow.mgt.util.WorkflowRequestStatus;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants;
+import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils;
-import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.
-        ERROR_CODE_ROLE_WF_PENDING_ALREADY_EXISTS;
-import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.
-        ERROR_CODE_ROLE_WF_ROLE_NOT_FOUND;
-import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.
-        ERROR_CODE_ROLE_WF_USER_NOT_FOUND;
-import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.
-        ERROR_CODE_ROLE_WF_USER_PENDING_DELETION;
 
+import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_ROLE_WF_PENDING_ALREADY_EXISTS;
+import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_ROLE_WF_ROLE_NOT_FOUND;
+import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_ROLE_WF_USER_NOT_FOUND;
+import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_ROLE_WF_USER_PENDING_DELETION;
+
+/**
+ * Update Users of RoleV2 workflow request handler.
+ */
 public class UpdateRoleV2UsersWFRequestHandler extends AbstractWorkflowRequestHandler {
 
     private static final String FRIENDLY_NAME = "Update Users Of Role";

@@ -41,6 +41,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Update role name workflow request handler.
+ */
 public class UpdateRoleNameWFRequestHandler extends AbstractWorkflowRequestHandler {
 
     private static final String FRIENDLY_NAME = "Update Rolename";

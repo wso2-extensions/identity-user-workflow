@@ -43,6 +43,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Delete User Claim workflow request handler.
+ */
 public class DeleteClaimWFRequestHandler extends AbstractWorkflowRequestHandler {
 
     private static final String FRIENDLY_NAME = "Delete User Claim";

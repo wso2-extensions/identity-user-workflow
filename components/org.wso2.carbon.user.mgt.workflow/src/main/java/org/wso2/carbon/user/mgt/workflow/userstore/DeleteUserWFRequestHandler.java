@@ -42,9 +42,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
+
 import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_ALREADY_EXISTS;
 import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_USER_NOT_FOUND;
 
+/**
+ * Delete user workflow request handler.
+ */
 public class DeleteUserWFRequestHandler extends AbstractWorkflowRequestHandler {
 
     private static final String FRIENDLY_NAME = "Delete User";

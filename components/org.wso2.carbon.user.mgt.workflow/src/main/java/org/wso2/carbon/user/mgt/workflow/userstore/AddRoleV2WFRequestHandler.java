@@ -21,11 +21,11 @@ package org.wso2.carbon.user.mgt.workflow.userstore;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.role.v2.mgt.core.RoleConstants;
 import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
 import org.wso2.carbon.identity.role.v2.mgt.core.exception.IdentityRoleManagementException;
+import org.wso2.carbon.identity.role.v2.mgt.core.model.Permission;
 import org.wso2.carbon.identity.role.v2.mgt.core.util.RoleManagementUtils;
 import org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService;
 import org.wso2.carbon.identity.workflow.mgt.bean.Entity;
@@ -35,30 +35,26 @@ import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowException;
 import org.wso2.carbon.identity.workflow.mgt.extension.AbstractWorkflowRequestHandler;
 import org.wso2.carbon.identity.workflow.mgt.util.WorkflowDataType;
 import org.wso2.carbon.identity.workflow.mgt.util.WorkflowRequestStatus;
-import org.wso2.carbon.user.api.UserRealm;
-import org.wso2.carbon.user.api.UserStoreException;
-import org.wso2.carbon.identity.role.v2.mgt.core.model.Permission;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
-import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants;
+import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.ArrayList;
-import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils;
 
 import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_ROLE_WF_PENDING_ALREADY_EXISTS;
-import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.
-        ERROR_CODE_ROLE_WF_ROLE_ALREADY_EXISTS;
-import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.
-        ERROR_CODE_ROLE_WF_USER_NOT_FOUND;
-import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.
-        ERROR_CODE_ROLE_WF_USER_PENDING_DELETION;
+import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_ROLE_WF_ROLE_ALREADY_EXISTS;
+import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_ROLE_WF_USER_NOT_FOUND;
+import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_ROLE_WF_USER_PENDING_DELETION;
 
+/**
+ * Add roleV2 workflow request handler.
+ */
 public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
 
     private static final String FRIENDLY_NAME = "Add Role";
@@ -117,7 +113,8 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
         entities[0] = new RoleEntity(roleName, UserStoreWFConstants.ENTITY_TYPE_ROLE, tenantId, audience,
                 audienceId);
         for (int i = 0; i < userList.size(); i++) {
-            entities[i + 1] = new RoleEntity(userList.get(i), UserStoreWFConstants.ENTITY_TYPE_USER, tenantId, audience, audienceId);
+            entities[i + 1] = new RoleEntity(userList.get(i), UserStoreWFConstants.ENTITY_TYPE_USER, tenantId,
+                    audience, audienceId);
         }
         if (!Boolean.TRUE.equals(getWorkFlowCompleted()) && !isValidOperation(entities)) {
             throw new WorkflowException("Operation is not valid");
@@ -233,24 +230,22 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
                             .entityHasPendingWorkflowsOfType(roleEntity, UserStoreWFConstants.ADD_ROLE_EVENT)) {
                         throw new WorkflowException(ERROR_CODE_ROLE_WF_PENDING_ALREADY_EXISTS.getMessage(),
                                 ERROR_CODE_ROLE_WF_PENDING_ALREADY_EXISTS.getCode());
-                    // Check if the role name already exists in the system.
+                        // Check if the role name already exists in the system.
                     } else if (roleManagementService.isExistingRoleName(roleEntity.getEntityId(),
                             roleEntity.getAudience(), roleEntity.getAudienceId(),
                             IdentityTenantUtil.getTenantDomain(roleEntity.getTenantId()))) {
                         throw new WorkflowException(ERROR_CODE_ROLE_WF_ROLE_ALREADY_EXISTS.getMessage(),
                                 ERROR_CODE_ROLE_WF_ROLE_ALREADY_EXISTS.getCode());
                     }
-                }
-                // User related validations.
-                else if (UserStoreWFConstants.ENTITY_TYPE_USER.equals(roleEntity.getEntityType())) {
+                    // User related validations.
+                } else if (UserStoreWFConstants.ENTITY_TYPE_USER.equals(roleEntity.getEntityType())) {
                     // Check if the user exists in the user store.
                     if (!userStoreManager.isExistingUserWithID(roleEntity.getEntityId())) {
                         throw new WorkflowException(String.format(ERROR_CODE_ROLE_WF_USER_NOT_FOUND.getMessage(),
                                 entity.getEntityId()),
                                 ERROR_CODE_ROLE_WF_USER_NOT_FOUND.getCode());
-                    }
-                    // Check if the user already pending in the user delete approval workflow.
-                    else if (workflowService
+                        // Check if the user already pending in the user delete approval workflow.
+                    } else if (workflowService
                             .entityHasPendingWorkflowsOfType(roleEntity, UserStoreWFConstants.DELETE_USER_EVENT)) {
                         throw new WorkflowException(String.format(ERROR_CODE_ROLE_WF_USER_PENDING_DELETION.getMessage(),
                                 entity.getEntityId()),

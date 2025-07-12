@@ -18,6 +18,9 @@
 
 package org.wso2.carbon.user.mgt.workflow.util;
 
+/**
+ * User store workflow constants.
+ */
 public class UserStoreWFConstants {
 
     public static final String CATEGORY_USERSTORE_OPERATIONS = "User Store Operations";

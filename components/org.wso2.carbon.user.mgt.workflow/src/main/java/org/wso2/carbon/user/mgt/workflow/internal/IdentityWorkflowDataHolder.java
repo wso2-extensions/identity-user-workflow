@@ -30,6 +30,9 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 
+/**
+ * Identity workflow data holder class.
+ */
 public class IdentityWorkflowDataHolder {
 
     private static IdentityWorkflowDataHolder instance = new IdentityWorkflowDataHolder();

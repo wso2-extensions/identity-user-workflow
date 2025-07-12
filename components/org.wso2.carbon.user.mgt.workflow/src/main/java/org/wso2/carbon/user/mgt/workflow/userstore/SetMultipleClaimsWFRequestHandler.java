@@ -43,6 +43,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Set multiple claims workflow request handler.
+ */
 public class SetMultipleClaimsWFRequestHandler extends AbstractWorkflowRequestHandler {
 
     private static final String FRIENDLY_NAME = "Update User Claims";

@@ -35,6 +35,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Change credential workflow request handler.
+ */
 public class ChangeCredentialWFRequestHandler extends AbstractWorkflowRequestHandler {
 
     private static final String FRIENDLY_NAME = "Update user credentials";
