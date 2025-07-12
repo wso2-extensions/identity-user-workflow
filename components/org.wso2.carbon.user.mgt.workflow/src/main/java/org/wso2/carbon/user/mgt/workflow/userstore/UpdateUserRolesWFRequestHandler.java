@@ -45,6 +45,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Update user roles workflow request handler.
+ */
 public class UpdateUserRolesWFRequestHandler extends AbstractWorkflowRequestHandler {
 
     private static final String FRIENDLY_NAME = "Update Roles of User";

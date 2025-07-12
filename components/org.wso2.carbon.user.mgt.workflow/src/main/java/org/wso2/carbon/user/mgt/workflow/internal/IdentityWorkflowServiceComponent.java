@@ -39,15 +39,18 @@ import org.wso2.carbon.user.mgt.workflow.userstore.AddUserWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.DeleteMultipleClaimsWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.DeleteRoleWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.DeleteUserWFRequestHandler;
+import org.wso2.carbon.user.mgt.workflow.userstore.RoleManagementActionListener;
 import org.wso2.carbon.user.mgt.workflow.userstore.SetMultipleClaimsWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.UpdateRoleNameWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.UpdateRoleUsersWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.UpdateRoleV2UsersWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.UpdateUserRolesWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.UserStoreActionListener;
-import org.wso2.carbon.user.mgt.workflow.userstore.RoleManagementActionListener;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
+/**
+ * Identity workflow service component class.
+ */
 @Component(
         name = "identity.workflow",
         immediate = true)

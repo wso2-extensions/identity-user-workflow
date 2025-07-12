@@ -45,6 +45,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Delete multiple claims workflow request handler.
+ */
 public class DeleteMultipleClaimsWFRequestHandler extends AbstractWorkflowRequestHandler {
 
     private static final String FRIENDLY_NAME = "Delete User Claims";

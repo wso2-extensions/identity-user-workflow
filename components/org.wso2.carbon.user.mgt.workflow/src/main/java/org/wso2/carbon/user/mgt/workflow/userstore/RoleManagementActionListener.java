@@ -30,6 +30,9 @@ import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowException;
 
 import java.util.List;
 
+/**
+ * Role management action listener.
+ */
 public class RoleManagementActionListener extends AbstractRoleManagementListener {
 
     @Override

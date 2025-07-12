@@ -22,7 +22,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.CarbonContext;
-import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.core.util.CryptoException;
 import org.wso2.carbon.core.util.CryptoUtil;
 import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
@@ -41,6 +40,7 @@ import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants;
+import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -50,15 +50,21 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils;
 
-import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_ALREADY_EXISTS;
-import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_ROLE_NOT_FOUND;
-import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_ROLE_PENDING_DELETION;
-import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_USER_ALREADY_EXISTS;
+import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.
+        ERROR_CODE_USER_WF_ALREADY_EXISTS;
+import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.
+        ERROR_CODE_USER_WF_ROLE_NOT_FOUND;
+import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.
+        ERROR_CODE_USER_WF_ROLE_PENDING_DELETION;
+import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.
+        ERROR_CODE_USER_WF_USER_ALREADY_EXISTS;
 import static org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils.getSelfRegistrationArbitraryProperties;
 import static org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils.setSelfRegistrationArbitraryProperties;
 
+/**
+ * Add user workflow request handler.
+ */
 public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
 
     private static final String FRIENDLY_NAME = "Add User";
@@ -301,15 +307,14 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
                     if (userStoreManager.isExistingUser(entity.getEntityId())) {
                         throw new WorkflowException(ERROR_CODE_USER_WF_USER_ALREADY_EXISTS.getMessage(),
                                 ERROR_CODE_USER_WF_USER_ALREADY_EXISTS.getCode());
-                    // Check if user already exists in pending add user workflow.
+                        // Check if user already exists in pending add user workflow.
                     } else if (workflowService
                             .entityHasPendingWorkflowsOfType(entity, UserStoreWFConstants.ADD_USER_EVENT)) {
                         throw new WorkflowException(ERROR_CODE_USER_WF_ALREADY_EXISTS.getMessage(),
                                 ERROR_CODE_USER_WF_ALREADY_EXISTS.getCode());
                     }
-                }
-                // Role related validations.
-                else if (UserStoreWFConstants.ENTITY_TYPE_ROLE.equals(entity.getEntityType())) {
+                    // Role related validations.
+                } else if (UserStoreWFConstants.ENTITY_TYPE_ROLE.equals(entity.getEntityType())) {
                     // Check if the role not exists in the user store.
                     if (!roleManagementService.isExistingRole(entity.getEntityId(),
                             CarbonContext.getThreadLocalCarbonContext().getTenantDomain())) {

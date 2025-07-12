@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2015-2025, WSO2 LLC. (http://www.wso2.com).
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
+ * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,9 +18,6 @@
 
 package org.wso2.carbon.user.mgt.workflow;
 
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService;
 import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowException;
@@ -28,9 +25,10 @@ import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 
 import java.util.List;
 
+/**
+ * User Management Workflow Service class.
+ */
 public class UserManagementWorkflowService {
-
-    private static final Log log = LogFactory.getLog(UserManagementWorkflowService.class);
 
     WorkflowManagementService workflowService = IdentityWorkflowDataHolder.getInstance().getWorkflowService();
 
@@ -40,7 +38,7 @@ public class UserManagementWorkflowService {
      * @param wfOperationType Operation Type of the Work-flow.
      * @param wfStatus        Current Status of the Work-flow.
      * @param entityType      Entity Type of the Work-flow.
-     * @param entityIdFilter        Entity ID filter to search
+     * @param entityIdFilter  Entity ID filter to search
      * @return
      * @throws WorkflowException
      */
@@ -55,5 +53,4 @@ public class UserManagementWorkflowService {
         return entityNames;
 
     }
-
 }

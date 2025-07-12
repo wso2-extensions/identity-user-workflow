@@ -55,6 +55,9 @@ import static org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils.isPassword
 import static org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils.isUsernameValid;
 import static org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils.triggerAddUserFailureListeners;
 
+/**
+ * User store action listener.
+ */
 public class UserStoreActionListener extends AbstractIdentityUserOperationEventListener {
 
     public static final String DO_PRE_AUTHENTICATE_IDENTITY_PROPERTY = "doPreAuthenticate";
@@ -95,7 +98,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
         }
 
         ValidationResult usernameValidationResult = isUsernameValid(userName, userStoreManager.getRealmConfiguration());
-        if (!usernameValidationResult.isValid()  && !UserCoreUtil.getSkipUsernamePatternValidationThreadLocal()) {
+        if (!usernameValidationResult.isValid() && !UserCoreUtil.getSkipUsernamePatternValidationThreadLocal()) {
             String errorCode = ERROR_CODE_INVALID_USER_NAME.getCode();
             String errorMessage = String
                     .format(ERROR_CODE_INVALID_USER_NAME.getMessage(), UserCoreUtil.removeDomainFromName(userName),
@@ -122,10 +125,10 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
         doPasswordPolicyValidation(userName, credential, userStoreManager, addUserWFRequestHandler);
 
         try {
-            String domain = userStoreManager.getRealmConfiguration().getUserStoreProperty(UserCoreConstants.RealmConfig
-                    .PROPERTY_DOMAIN_NAME);
+            String domain = userStoreManager.getRealmConfiguration()
+                    .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
 
-            int tenantId = userStoreManager.getTenantId() ;
+            int tenantId = userStoreManager.getTenantId();
             String currentUser = PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
             PrivilegedCarbonContext.startTenantFlow();
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId, true);
@@ -172,9 +175,9 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
         }
         try {
             DeleteUserWFRequestHandler deleteUserWFRequestHandler = new DeleteUserWFRequestHandler();
-            String domain = userStoreManager.getRealmConfiguration().getUserStoreProperty(UserCoreConstants.RealmConfig
-                                                                                                  .PROPERTY_DOMAIN_NAME);
-            int tenantId = userStoreManager.getTenantId() ;
+            String domain = userStoreManager.getRealmConfiguration().getUserStoreProperty(
+                    UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
+            int tenantId = userStoreManager.getTenantId();
             String currentUser = PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
             PrivilegedCarbonContext.startTenantFlow();
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId, true);
@@ -188,7 +191,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
             return true;
         } catch (WorkflowException e) {
             // Sending the error message and the code to identify the validation failures.
-            throw new UserStoreException(e.getMessage(),e.getErrorCode(), e);
+            throw new UserStoreException(e.getMessage(), e.getErrorCode(), e);
         } finally {
             PrivilegedCarbonContext.endTenantFlow();
         }
@@ -205,18 +208,19 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
         claims.put(claimURI, claimValue);
 
         try {
-            SetMultipleClaimsWFRequestHandler setMultipleClaimsWFRequestHandler = new SetMultipleClaimsWFRequestHandler();
+            SetMultipleClaimsWFRequestHandler setMultipleClaimsWFRequestHandler =
+                    new SetMultipleClaimsWFRequestHandler();
             String domain = userStoreManager.getRealmConfiguration().getUserStoreProperty(UserCoreConstants.RealmConfig
-                                                                                                  .PROPERTY_DOMAIN_NAME);
+                    .PROPERTY_DOMAIN_NAME);
 
-            int tenantId = userStoreManager.getTenantId() ;
+            int tenantId = userStoreManager.getTenantId();
             String currentUser = PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
             PrivilegedCarbonContext.startTenantFlow();
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId, true);
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setUsername(currentUser);
 
             return setMultipleClaimsWFRequestHandler.startSetMultipleClaimsWorkflow(domain, userName, claims,
-                                                                                    profileName);
+                    profileName);
 
         } catch (WorkflowException e) {
             // Sending e.getMessage() since it is required to give error message to end user.
@@ -234,16 +238,18 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
             return true;
         }
         try {
-            SetMultipleClaimsWFRequestHandler setMultipleClaimsWFRequestHandler = new SetMultipleClaimsWFRequestHandler();
+            SetMultipleClaimsWFRequestHandler setMultipleClaimsWFRequestHandler =
+                    new SetMultipleClaimsWFRequestHandler();
             String domain = userStoreManager.getRealmConfiguration().getUserStoreProperty(UserCoreConstants.RealmConfig
-                                                                                                  .PROPERTY_DOMAIN_NAME);
-            int tenantId = userStoreManager.getTenantId() ;
+                    .PROPERTY_DOMAIN_NAME);
+            int tenantId = userStoreManager.getTenantId();
             String currentUser = PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
             PrivilegedCarbonContext.startTenantFlow();
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId, true);
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setUsername(currentUser);
 
-            return setMultipleClaimsWFRequestHandler.startSetMultipleClaimsWorkflow(domain, userName, claims, profileName);
+            return setMultipleClaimsWFRequestHandler.startSetMultipleClaimsWorkflow(domain, userName, claims,
+                    profileName);
         } catch (WorkflowException e) {
             // Sending e.getMessage() since it is required to give error message to end user.
             throw new UserStoreException(e.getMessage(), e);
@@ -260,10 +266,11 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
             return true;
         }
         try {
-            DeleteMultipleClaimsWFRequestHandler deleteMultipleClaimsWFRequestHandler = new DeleteMultipleClaimsWFRequestHandler();
+            DeleteMultipleClaimsWFRequestHandler deleteMultipleClaimsWFRequestHandler =
+                    new DeleteMultipleClaimsWFRequestHandler();
             String domain = userStoreManager.getRealmConfiguration().getUserStoreProperty(UserCoreConstants.RealmConfig
-                                                                                                  .PROPERTY_DOMAIN_NAME);
-            int tenantId = userStoreManager.getTenantId() ;
+                    .PROPERTY_DOMAIN_NAME);
+            int tenantId = userStoreManager.getTenantId();
             String currentUser = PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
             PrivilegedCarbonContext.startTenantFlow();
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId, true);
@@ -290,18 +297,19 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
         claims[0] = claimURI;
 
         try {
-            DeleteMultipleClaimsWFRequestHandler deleteMultipleClaimsWFRequestHandler = new DeleteMultipleClaimsWFRequestHandler();
+            DeleteMultipleClaimsWFRequestHandler deleteMultipleClaimsWFRequestHandler =
+                    new DeleteMultipleClaimsWFRequestHandler();
             String domain = userStoreManager.getRealmConfiguration().getUserStoreProperty(UserCoreConstants.RealmConfig
-                                                                                                  .PROPERTY_DOMAIN_NAME);
+                    .PROPERTY_DOMAIN_NAME);
 
-            int tenantId = userStoreManager.getTenantId() ;
+            int tenantId = userStoreManager.getTenantId();
             String currentUser = PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
             PrivilegedCarbonContext.startTenantFlow();
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId, true);
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setUsername(currentUser);
 
             return deleteMultipleClaimsWFRequestHandler.startDeleteMultipleClaimsWorkflow(domain, userName, claims,
-                                                                                          profileName);
+                    profileName);
         } catch (WorkflowException e) {
             // Sending e.getMessage() since it is required to give error message to end user.
             throw new UserStoreException(e.getMessage(), e);
@@ -323,7 +331,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
             String domain = userStoreManager.getRealmConfiguration().getUserStoreProperty(UserCoreConstants.RealmConfig
                     .PROPERTY_DOMAIN_NAME);
 
-            int tenantId = userStoreManager.getTenantId() ;
+            int tenantId = userStoreManager.getTenantId();
             String currentUser = PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
             PrivilegedCarbonContext.startTenantFlow();
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId, true);
@@ -365,9 +373,9 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
         try {
             DeleteRoleWFRequestHandler deleteRoleWFRequestHandler = new DeleteRoleWFRequestHandler();
             String domain = userStoreManager.getRealmConfiguration().getUserStoreProperty(UserCoreConstants.RealmConfig
-                                                                                                  .PROPERTY_DOMAIN_NAME);
+                    .PROPERTY_DOMAIN_NAME);
 
-            int tenantId = userStoreManager.getTenantId() ;
+            int tenantId = userStoreManager.getTenantId();
             String currentUser = PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
             PrivilegedCarbonContext.startTenantFlow();
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId, true);
@@ -398,9 +406,9 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
         try {
             UpdateRoleNameWFRequestHandler updateRoleNameWFRequestHandler = new UpdateRoleNameWFRequestHandler();
             String domain = userStoreManager.getRealmConfiguration().getUserStoreProperty(UserCoreConstants.RealmConfig
-                                                                                                  .PROPERTY_DOMAIN_NAME);
+                    .PROPERTY_DOMAIN_NAME);
 
-            int tenantId = userStoreManager.getTenantId() ;
+            int tenantId = userStoreManager.getTenantId();
             String currentUser = PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
             PrivilegedCarbonContext.startTenantFlow();
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId, true);
@@ -441,9 +449,9 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
         try {
             UpdateRoleUsersWFRequestHandler updateRoleUsersWFRequestHandler = new UpdateRoleUsersWFRequestHandler();
             String domain = userStoreManager.getRealmConfiguration().getUserStoreProperty(UserCoreConstants.RealmConfig
-                                                                                                  .PROPERTY_DOMAIN_NAME);
+                    .PROPERTY_DOMAIN_NAME);
 
-            int tenantId = userStoreManager.getTenantId() ;
+            int tenantId = userStoreManager.getTenantId();
             String currentUser = PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
             PrivilegedCarbonContext.startTenantFlow();
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId, true);
@@ -476,9 +484,9 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
         try {
             UpdateUserRolesWFRequestHandler updateUserRolesWFRequestHandler = new UpdateUserRolesWFRequestHandler();
             String domain = userStoreManager.getRealmConfiguration().getUserStoreProperty(UserCoreConstants.RealmConfig
-                                                                                                  .PROPERTY_DOMAIN_NAME);
+                    .PROPERTY_DOMAIN_NAME);
 
-            int tenantId = userStoreManager.getTenantId() ;
+            int tenantId = userStoreManager.getTenantId();
             String currentUser = PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
             PrivilegedCarbonContext.startTenantFlow();
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId, true);
@@ -495,10 +503,10 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
 
     private boolean isCalledViaIdentityMgtListners() {
         return IdentityUtil.threadLocalProperties.get().containsKey(DO_PRE_AUTHENTICATE_IDENTITY_PROPERTY) ||
-                IdentityUtil .threadLocalProperties.get().containsKey(DO_POST_AUTHENTICATE_IDENTITY_PROPERTY) ||
-                IdentityUtil .threadLocalProperties .get().containsKey(DO_POST_ADD_USER_IDENTITY_PROPERTY) ||
-                IdentityUtil.threadLocalProperties.get() .containsKey(DO_PRE_SET_USER_CLAIM_VALUES_IDENTITY_PROPERT)
-                || IdentityUtil.threadLocalProperties.get().containsKey (DO_POST_UPDATE_CREDENTIAL_IDENTITY_PROPERTY);
+                IdentityUtil.threadLocalProperties.get().containsKey(DO_POST_AUTHENTICATE_IDENTITY_PROPERTY) ||
+                IdentityUtil.threadLocalProperties.get().containsKey(DO_POST_ADD_USER_IDENTITY_PROPERTY) ||
+                IdentityUtil.threadLocalProperties.get().containsKey(DO_PRE_SET_USER_CLAIM_VALUES_IDENTITY_PROPERT)
+                || IdentityUtil.threadLocalProperties.get().containsKey(DO_POST_UPDATE_CREDENTIAL_IDENTITY_PROPERTY);
     }
 
     private void doPasswordPolicyValidation(String userName, Object credential, UserStoreManager userStoreManager,
