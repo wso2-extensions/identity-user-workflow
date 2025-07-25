@@ -24,8 +24,6 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.core.util.CryptoException;
 import org.wso2.carbon.core.util.CryptoUtil;
-import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
-import org.wso2.carbon.identity.role.v2.mgt.core.exception.IdentityRoleManagementException;
 import org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService;
 import org.wso2.carbon.identity.workflow.mgt.bean.Entity;
 import org.wso2.carbon.identity.workflow.mgt.exception.InternalWorkflowException;
@@ -42,8 +40,8 @@ import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants;
 import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -53,10 +51,6 @@ import java.util.UUID;
 
 import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.
         ERROR_CODE_USER_WF_ALREADY_EXISTS;
-import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.
-        ERROR_CODE_USER_WF_ROLE_NOT_FOUND;
-import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.
-        ERROR_CODE_USER_WF_ROLE_PENDING_DELETION;
 import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.
         ERROR_CODE_USER_WF_USER_ALREADY_EXISTS;
 import static org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils.getSelfRegistrationArbitraryProperties;
@@ -93,15 +87,15 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
     /**
      * Starts the workflow execution
      *
-     * @param userStoreDomain
-     * @param userName
-     * @param credential
-     * @param roleList
-     * @param claims
-     * @param profile
+     * @param userStoreDomain user store domain of the user.
+     * @param userName user name of the user to be added.
+     * @param credential credential of the user to be added.
+     * @param roleList list of roles to be assigned to the user.
+     * @param claims claims to be assigned to the user.
+     * @param profile profile to be assigned to the user.
      * @return <code>true</code> if the workflow request is ready to be continued (i.e. has been approved from
      * workflow) <code>false</code> otherwise (i.e. request placed for approval)
-     * @throws WorkflowException
+     * @throws WorkflowException if an error occurs while starting the workflow.
      */
     public boolean startAddUserFlow(String userStoreDomain, String userName, Object credential, String[] roleList,
                                     Map<String, String> claims, String profile) throws WorkflowException {
@@ -157,14 +151,14 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
         }
         boolean state = startWorkFlow(wfParams, nonWfParams, uuid).getExecutorResultState().state();
 
-        //WF_REQUEST_ENTITY_RELATIONSHIP table has foreign key to WF_REQUEST, so need to run this after WF_REQUEST is
-        // updated
+        // WF_REQUEST_ENTITY_RELATIONSHIP table has foreign key to WF_REQUEST, so need to run this after WF_REQUEST is
+        // updated.
         if (!Boolean.TRUE.equals(getWorkFlowCompleted()) && !state) {
             //ToDo: Add thread local to handle scenarios where workflow is not associated with the event.
             try {
                 workflowService.addRequestEntityRelationships(uuid, entities);
             } catch (InternalWorkflowException e) {
-                //debug exception which occurs at DB level since no workflows associated with event
+                // Debug exception which occurs at DB level since no workflows associated with event.
                 if (log.isDebugEnabled()) {
                     log.debug("No workflow associated with the operation.", e);
                 }
@@ -218,7 +212,7 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
         String decryptedCredentials;
         Object requestUsername = requestParams.get(USERNAME);
         Object credential = requestParams.get(CREDENTIAL);
-        if (requestUsername == null || !(requestUsername instanceof String)) {
+        if (!(requestUsername instanceof String)) {
             throw new WorkflowException("Callback request for Add User received without the mandatory " +
                     "parameter 'username'");
         }
@@ -235,10 +229,10 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
             }
             CryptoUtil cryptoUtil = CryptoUtil.getDefaultCryptoUtil();
             byte[] decryptedBytes = cryptoUtil.base64DecodeAndDecrypt(credential.toString());
-            decryptedCredentials = new String(decryptedBytes, "UTF-8");
+            decryptedCredentials = new String(decryptedBytes, StandardCharsets.UTF_8);
             credential = decryptedCredentials;
 
-        } catch (CryptoException | UnsupportedEncodingException e) {
+        } catch (CryptoException e) {
             throw new WorkflowException("Error while decrypting the Credential for user " + userName, e);
         }
 
@@ -296,8 +290,6 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
             return true;
         }
         AbstractUserStoreManager userStoreManager = UserStoreWFUtils.getUserStoreManager();
-        RoleManagementService roleManagementService = IdentityWorkflowDataHolder.getInstance()
-                .getRoleManagementService();
 
         for (Entity entity : entities) {
             try {
@@ -313,26 +305,8 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
                         throw new WorkflowException(ERROR_CODE_USER_WF_ALREADY_EXISTS.getMessage(),
                                 ERROR_CODE_USER_WF_ALREADY_EXISTS.getCode());
                     }
-                    // Role related validations.
-                } else if (UserStoreWFConstants.ENTITY_TYPE_ROLE.equals(entity.getEntityType())) {
-                    // Check if the role not exists in the user store.
-                    if (!roleManagementService.isExistingRole(entity.getEntityId(),
-                            CarbonContext.getThreadLocalCarbonContext().getTenantDomain())) {
-                        throw new WorkflowException(String.format(ERROR_CODE_USER_WF_ROLE_NOT_FOUND.getMessage(),
-                                entity.getEntityId()),
-                                ERROR_CODE_USER_WF_ROLE_NOT_FOUND.getCode());
-                    // Check if assigned role exists in the pending delete/update role  workflow.
-                    } else if (workflowService.entityHasPendingWorkflowsOfType(entity,
-                            UserStoreWFConstants.DELETE_ROLE_EVENT) ||
-                            workflowService.entityHasPendingWorkflowsOfType(entity,
-                                    UserStoreWFConstants.UPDATE_ROLE_NAME_EVENT)) {
-                        throw new WorkflowException(String.format(ERROR_CODE_USER_WF_ROLE_PENDING_DELETION.getMessage(),
-                                entity.getEntityId()),
-                                ERROR_CODE_USER_WF_ROLE_PENDING_DELETION.getCode());
-                    }
                 }
-            } catch (InternalWorkflowException | org.wso2.carbon.user.core.UserStoreException |
-                     IdentityRoleManagementException e) {
+            } catch (InternalWorkflowException | org.wso2.carbon.user.core.UserStoreException e) {
                 throw new WorkflowException(e.getMessage(), e);
             }
         }
