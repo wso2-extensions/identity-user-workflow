@@ -212,10 +212,6 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
     public boolean isValidOperation(Entity[] entities) throws WorkflowException {
 
         WorkflowManagementService workflowService = IdentityWorkflowDataHolder.getInstance().getWorkflowService();
-        if (!workflowService.isEventAssociated(UserStoreWFConstants.ADD_ROLE_EVENT)) {
-            return true;
-        }
-
         AbstractUserStoreManager userStoreManager = UserStoreWFUtils.getUserStoreManager();
         RoleManagementService roleManagementService = IdentityWorkflowDataHolder.getInstance()
                 .getRoleManagementService();

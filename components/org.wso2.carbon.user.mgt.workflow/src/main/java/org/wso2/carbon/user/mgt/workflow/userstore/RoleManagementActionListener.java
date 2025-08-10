@@ -27,8 +27,11 @@ import org.wso2.carbon.identity.role.v2.mgt.core.listener.AbstractRoleManagement
 import org.wso2.carbon.identity.role.v2.mgt.core.listener.RoleManagementListener;
 import org.wso2.carbon.identity.role.v2.mgt.core.model.Permission;
 import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowException;
+import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants;
 
 import java.util.List;
+
+import static org.wso2.carbon.user.mgt.workflow.util.Util.isEventAssociatedWithWorkflow;
 
 /**
  * Role management action listener.
@@ -61,7 +64,7 @@ public class RoleManagementActionListener extends AbstractRoleManagementListener
                            List<Permission> permissions, String audience, String audienceId, String tenantDomain)
             throws IdentityRoleManagementException {
 
-        if (!isEnable()) {
+        if (!isEnable() || !isEventAssociatedWithWorkflow(UserStoreWFConstants.ADD_ROLE_EVENT)) {
             return;
         }
 
@@ -83,7 +86,8 @@ public class RoleManagementActionListener extends AbstractRoleManagementListener
     @Override
     public void preUpdateUserListOfRole(String roleId, List<String> newUserIDList, List<String> deletedUserIDList,
                                         String tenantDomain) throws IdentityRoleManagementException {
-        if (!isEnable()) {
+
+        if (!isEnable() || !isEventAssociatedWithWorkflow(UserStoreWFConstants.UPDATE_ROLE_V2_USERS_EVENT)) {
             return;
         }
 
