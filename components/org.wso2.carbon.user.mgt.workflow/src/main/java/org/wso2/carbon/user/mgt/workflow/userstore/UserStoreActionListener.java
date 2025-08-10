@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.wso2.carbon.identity.organization.management.organization.user.sharing.constant.UserSharingConstants.CLAIM_MANAGED_ORGANIZATION;
 import static org.wso2.carbon.user.core.constants.UserCoreErrorConstants.ErrorMessages.ERROR_CODE_INVALID_PASSWORD;
 import static org.wso2.carbon.user.core.constants.UserCoreErrorConstants.ErrorMessages.ERROR_CODE_INVALID_USER_NAME;
 import static org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils.isPasswordValid;
@@ -102,6 +103,10 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
             return true;
         }
 
+        if (claims != null && claims.containsKey(CLAIM_MANAGED_ORGANIZATION)) {
+            // User add workflow is not supported for the shared users.
+            return true;
+        }
         validateUserName(userName, credential, roleList, claims, profile, userStoreManager);
         validatePassword(credential, userName, roleList, claims, profile, userStoreManager);
 

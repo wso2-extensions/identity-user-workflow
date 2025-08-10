@@ -90,6 +90,11 @@
                 <version>${identity.framework.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.identity.organization.management</groupId>
+                <artifactId>org.wso2.carbon.identity.organization.management.organization.user.sharing</artifactId>
+                <version>${org.wso2.identity.organization.mgt.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.carbon.identity.governance</groupId>
                 <artifactId>org.wso2.carbon.identity.recovery</artifactId>
                 <version>${identity.governance.version}</version>
@@ -342,6 +347,9 @@
         <identity.user.workflow.exp.pkg.version>${project.version}</identity.user.workflow.exp.pkg.version>
         <identity.governance.version>1.4.1</identity.governance.version>
         <identity.governance.package.import.version.range>[1.4.1, 2)</identity.governance.package.import.version.range>
+        <org.wso2.identity.organization.mgt.version>2.0.3</org.wso2.identity.organization.mgt.version>
+        <org.wso2.identity.organization.mgt.import.version.range>[1.0.0,3.0.0)
+        </org.wso2.identity.organization.mgt.import.version.range>
 
         <!--Carbon component version-->
         <carbon.user.api.imp.pkg.version.range>[1.0.1, 2.0.0)</carbon.user.api.imp.pkg.version.range>
