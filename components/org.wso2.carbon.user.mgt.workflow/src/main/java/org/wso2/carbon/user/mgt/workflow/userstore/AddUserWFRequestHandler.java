@@ -40,7 +40,6 @@ import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants;
 import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils;
 
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -302,7 +301,6 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
                         throw new WorkflowException(ERROR_CODE_USER_WF_ALREADY_EXISTS.getMessage(),
                                 ERROR_CODE_USER_WF_ALREADY_EXISTS.getCode());
                     }
-                    // Role related validations.
                 }
             } catch (InternalWorkflowException | org.wso2.carbon.user.core.UserStoreException e) {
                 throw new WorkflowException(e.getMessage(), e);
