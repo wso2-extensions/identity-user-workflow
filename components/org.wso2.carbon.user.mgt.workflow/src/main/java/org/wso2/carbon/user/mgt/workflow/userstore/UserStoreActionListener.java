@@ -390,7 +390,6 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     public boolean doPreUpdateRoleListOfUser(String userName, String[] deletedRoles, String[] newRoles, UserStoreManager
             userStoreManager) throws UserStoreException {
 
-
         if (!isEnable() || isCalledViaIdentityMgtListners() || isDisabled()) {
             return true;
         }
