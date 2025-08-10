@@ -226,7 +226,7 @@ public class UpdateUserRolesWFRequestHandler extends AbstractWorkflowRequestHand
             try {
                 if (UserStoreWFConstants.ENTITY_TYPE_USER.equals(entities[i].getEntityType()) && workflowService
                         .entityHasPendingWorkflowsOfType(entities[i], UserStoreWFConstants.DELETE_USER_EVENT)) {
-                    throw new WorkflowException("User is pending on a delete workfloww which clocks this operation.");
+                    throw new WorkflowException("User is pending on a delete workflow which blocks this operation.");
                 } else if (UserStoreWFConstants.ENTITY_TYPE_ROLE.equals(entities[i].getEntityType()) && (workflowService
                         .entityHasPendingWorkflowsOfType(entities[i], UserStoreWFConstants.DELETE_ROLE_EVENT) ||
                         workflowService.entityHasPendingWorkflowsOfType(entities[i], UserStoreWFConstants
