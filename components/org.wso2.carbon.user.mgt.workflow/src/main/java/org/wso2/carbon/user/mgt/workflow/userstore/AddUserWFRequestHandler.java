@@ -104,7 +104,7 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
 
         Map<String, Object> wfParams = new HashMap<>();
         Map<String, Object> nonWfParams = new HashMap<>();
-        String encryptedCredentials = null;
+        String encryptedCredentials;
 
         if (roleList == null) {
             roleList = new String[0];
@@ -121,7 +121,7 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
             }
             CryptoUtil cryptoUtil = CryptoUtil.getDefaultCryptoUtil();
             encryptedCredentials = cryptoUtil.
-                    encryptAndBase64Encode((credential.toString()).getBytes(Charset.forName("UTF-8")));
+                    encryptAndBase64Encode((credential.toString()).getBytes(StandardCharsets.UTF_8));
         } catch (CryptoException e) {
             throw new WorkflowException("Error while encrypting the Credential for User Name" + " " + userName, e);
         }
@@ -133,7 +133,7 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
         wfParams.put(PROFILE, profile);
         nonWfParams.put(CREDENTIAL, encryptedCredentials);
 
-        // Store self registration arbitrary attributes as non-workflow properties.
+        // Store self-registration arbitrary attributes as non-workflow properties.
         Map<String, String> selfRegistrationArbitraryAttributes = getSelfRegistrationArbitraryProperties();
         for (Map.Entry<String, String> entry : selfRegistrationArbitraryAttributes.entrySet()) {
             nonWfParams.put(ARBITRARY_ATTRIBUTE_PREFIX + entry.getKey(), entry.getValue());
@@ -158,7 +158,7 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
             try {
                 workflowService.addRequestEntityRelationships(uuid, entities);
             } catch (InternalWorkflowException e) {
-                // Debug exception which occurs at DB level since no workflows associated with event.
+                // Debug exception which has occurred at DB level since no workflows associated with event.
                 if (log.isDebugEnabled()) {
                     log.debug("No workflow associated with the operation.", e);
                 }
@@ -286,9 +286,6 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
     public boolean isValidOperation(Entity[] entities) throws WorkflowException {
 
         WorkflowManagementService workflowService = IdentityWorkflowDataHolder.getInstance().getWorkflowService();
-        if (!workflowService.isEventAssociated(UserStoreWFConstants.ADD_USER_EVENT)) {
-            return true;
-        }
         AbstractUserStoreManager userStoreManager = UserStoreWFUtils.getUserStoreManager();
 
         for (Entity entity : entities) {
@@ -305,6 +302,7 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
                         throw new WorkflowException(ERROR_CODE_USER_WF_ALREADY_EXISTS.getMessage(),
                                 ERROR_CODE_USER_WF_ALREADY_EXISTS.getCode());
                     }
+                    // Role related validations.
                 }
             } catch (InternalWorkflowException | org.wso2.carbon.user.core.UserStoreException e) {
                 throw new WorkflowException(e.getMessage(), e);

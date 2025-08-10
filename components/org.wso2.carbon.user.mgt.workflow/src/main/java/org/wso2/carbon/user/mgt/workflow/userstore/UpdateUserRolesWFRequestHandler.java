@@ -193,12 +193,12 @@ public class UpdateUserRolesWFRequestHandler extends AbstractWorkflowRequestHand
                 UserRealm userRealm = realmService.getTenantUserRealm(tenantId);
                 userRealm.getUserStoreManager().updateRoleListOfUser(userName, deletedRoles, newRoles);
             } catch (UserStoreException e) {
-                // Sending e.getMessage() since it is required to give error message to end user.
+                // Sending e.getMessage() since it is required to give an error message to end user.
                 throw new WorkflowException(e.getMessage(), e);
             }
         } else {
             if (retryNeedAtCallback()) {
-                //unset threadlocal variable
+                //unset thread local variable
                 unsetWorkFlowCompleted();
             }
             if (log.isDebugEnabled()) {
