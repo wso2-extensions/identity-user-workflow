@@ -18,8 +18,11 @@
 
 package org.wso2.carbon.user.mgt.workflow.userstore;
 
+import org.apache.commons.lang.StringUtils;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.core.model.IdentityEventListenerConfig;
 import org.wso2.carbon.identity.core.util.IdentityCoreConstants;
+import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.role.v2.mgt.core.RoleConstants;
 import org.wso2.carbon.identity.role.v2.mgt.core.exception.IdentityRoleManagementException;
@@ -64,7 +67,8 @@ public class RoleManagementActionListener extends AbstractRoleManagementListener
                            List<Permission> permissions, String audience, String audienceId, String tenantDomain)
             throws IdentityRoleManagementException {
 
-        if (!isEnable() || !isEventAssociatedWithWorkflow(UserStoreWFConstants.ADD_ROLE_EVENT)) {
+        if (!isEnable() || !isEventAssociatedWithWorkflow(UserStoreWFConstants.ADD_ROLE_EVENT)
+                || isRoleSharingOperation()) {
             return;
         }
 
@@ -104,5 +108,19 @@ public class RoleManagementActionListener extends AbstractRoleManagementListener
         } catch (WorkflowException e) {
             throw new IdentityRoleManagementException(e.getErrorCode(), e.getMessage(), e);
         }
+    }
+
+    /**
+     * Checks whether role creation is initiated as a result of role sharing.
+     *
+     * @return true if the flow is related to role sharing operation, false otherwise.
+     */
+    private boolean isRoleSharingOperation() {
+
+        /* If the request initiated organization is different from the tenant domain, it indicates that the request
+            is initiated from a different organization, which is a role sharing operation. */
+        String requestInitiatedOrganization = IdentityTenantUtil.getTenantDomainFromContext();
+        String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
+        return !StringUtils.equals(requestInitiatedOrganization, tenantDomain);
     }
 }
