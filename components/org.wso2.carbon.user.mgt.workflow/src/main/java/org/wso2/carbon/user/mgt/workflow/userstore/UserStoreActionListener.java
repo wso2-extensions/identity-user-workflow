@@ -69,6 +69,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     public static final String DO_POST_ADD_USER_IDENTITY_PROPERTY = "doPostAddUser";
     public static final String DO_PRE_SET_USER_CLAIM_VALUES_IDENTITY_PROPERT = "doPreSetUserClaimValues";
     public static final String DO_POST_UPDATE_CREDENTIAL_IDENTITY_PROPERTY = "doPostUpdateCredential";
+    public static final String USER_ONBOARD_FROM_FRAMEWORK = "authenticationFrameworkFlow";
     private static final Log log = LogFactory.getLog(UserStoreActionListener.class);
 
 
@@ -99,7 +100,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
                                 String profile, UserStoreManager userStoreManager) throws UserStoreException {
 
         if (!isEnable() || isCalledViaIdentityMgtListners()
-                || !isEventAssociatedWithWorkflow(UserStoreWFConstants.ADD_USER_EVENT)) {
+                || !isEventAssociatedWithWorkflow(UserStoreWFConstants.ADD_USER_EVENT) || isJITProvisioningFlow()) {
             return true;
         }
 
@@ -411,11 +412,19 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     }
 
     private boolean isCalledViaIdentityMgtListners() {
+
         return IdentityUtil.threadLocalProperties.get().containsKey(DO_PRE_AUTHENTICATE_IDENTITY_PROPERTY) ||
                 IdentityUtil.threadLocalProperties.get().containsKey(DO_POST_AUTHENTICATE_IDENTITY_PROPERTY) ||
                 IdentityUtil.threadLocalProperties.get().containsKey(DO_POST_ADD_USER_IDENTITY_PROPERTY) ||
                 IdentityUtil.threadLocalProperties.get().containsKey(DO_PRE_SET_USER_CLAIM_VALUES_IDENTITY_PROPERT)
                 || IdentityUtil.threadLocalProperties.get().containsKey(DO_POST_UPDATE_CREDENTIAL_IDENTITY_PROPERTY);
+    }
+
+    /* If the user onboarding is done via the authentication framework, we do not want to engage with the
+       workflow engine. */
+    private boolean isJITProvisioningFlow() {
+
+        return IdentityUtil.threadLocalProperties.get().containsKey(USER_ONBOARD_FROM_FRAMEWORK);
     }
 
     private void doPasswordPolicyValidation(String userName, Object credential, UserStoreManager userStoreManager,
