@@ -69,7 +69,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     public static final String DO_POST_ADD_USER_IDENTITY_PROPERTY = "doPostAddUser";
     public static final String DO_PRE_SET_USER_CLAIM_VALUES_IDENTITY_PROPERT = "doPreSetUserClaimValues";
     public static final String DO_POST_UPDATE_CREDENTIAL_IDENTITY_PROPERTY = "doPostUpdateCredential";
-    public static final String USER_ONBOARD_FROM_FRAMEWORK = "authenticationFrameworkFlow";
+    private static final String AUTHENTICATION_FROM_FRAMEWORK = "authenticationFrameworkFlow";
     private static final Log log = LogFactory.getLog(UserStoreActionListener.class);
 
 
@@ -424,7 +424,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
        workflow engine. */
     private boolean isJITProvisioningFlow() {
 
-        return IdentityUtil.threadLocalProperties.get().containsKey(USER_ONBOARD_FROM_FRAMEWORK);
+        return IdentityUtil.threadLocalProperties.get().containsKey(AUTHENTICATION_FROM_FRAMEWORK);
     }
 
     private void doPasswordPolicyValidation(String userName, Object credential, UserStoreManager userStoreManager,
