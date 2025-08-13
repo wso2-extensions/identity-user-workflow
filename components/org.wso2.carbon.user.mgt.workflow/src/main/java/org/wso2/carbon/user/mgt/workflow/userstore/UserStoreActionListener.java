@@ -420,8 +420,9 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
                 || IdentityUtil.threadLocalProperties.get().containsKey(DO_POST_UPDATE_CREDENTIAL_IDENTITY_PROPERTY);
     }
 
-    /* If the user onboarding is done via the authentication framework, we do not want to engage with the
-       workflow engine. */
+    /* If the user onboarding is done via the authentication framework(JIT), we do not want to engage with the
+       workflow engine. JIT provisioning is a process where a user is onboarded automatically during authentication,
+       rather than through a manual or separate registration process.*/
     private boolean isJITProvisioningFlow() {
 
         return IdentityUtil.threadLocalProperties.get().containsKey(AUTHENTICATION_FROM_FRAMEWORK);
