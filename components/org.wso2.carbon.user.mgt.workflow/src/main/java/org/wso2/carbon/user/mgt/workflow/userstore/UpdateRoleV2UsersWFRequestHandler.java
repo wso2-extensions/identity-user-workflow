@@ -97,8 +97,7 @@ public class UpdateRoleV2UsersWFRequestHandler extends AbstractWorkflowRequestHa
             entityList.add(new Entity(deletedUserId, UserStoreWFConstants.ENTITY_TYPE_USER, tenantId));
         }
         Entity[] entities = entityList.toArray(new Entity[0]);
-        if (workflowService.isEventAssociated(UserStoreWFConstants.UPDATE_ROLE_V2_USERS_EVENT) && !Boolean.TRUE
-                .equals(getWorkFlowCompleted()) && !isValidOperation(entities)) {
+        if (!Boolean.TRUE.equals(getWorkFlowCompleted()) && !isValidOperation(entities)) {
             throw new WorkflowException("Operation is not valid.");
         }
         boolean state = startWorkFlow(wfParams, nonWfParams, uuid).getExecutorResultState().state();
