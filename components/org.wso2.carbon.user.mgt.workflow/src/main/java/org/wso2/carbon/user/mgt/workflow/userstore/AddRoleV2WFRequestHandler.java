@@ -31,6 +31,7 @@ import org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService;
 import org.wso2.carbon.identity.workflow.mgt.bean.Entity;
 import org.wso2.carbon.identity.workflow.mgt.bean.RoleEntity;
 import org.wso2.carbon.identity.workflow.mgt.exception.InternalWorkflowException;
+import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowClientException;
 import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowException;
 import org.wso2.carbon.identity.workflow.mgt.extension.AbstractWorkflowRequestHandler;
 import org.wso2.carbon.identity.workflow.mgt.util.WorkflowDataType;
@@ -47,8 +48,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.wso2.carbon.identity.role.v2.mgt.core.RoleConstants.Error.ROLE_ALREADY_EXISTS;
 import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_ROLE_WF_PENDING_ALREADY_EXISTS;
-import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_ROLE_WF_ROLE_ALREADY_EXISTS;
 import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_ROLE_WF_USER_NOT_FOUND;
 import static org.wso2.carbon.identity.workflow.mgt.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_ROLE_WF_USER_PENDING_DELETION;
 
@@ -224,14 +225,15 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
                     // Check if the role name exists in the role add workflow.
                     if (workflowService
                             .entityHasPendingWorkflowsOfType(roleEntity, UserStoreWFConstants.ADD_ROLE_EVENT)) {
-                        throw new WorkflowException(ERROR_CODE_ROLE_WF_PENDING_ALREADY_EXISTS.getMessage(),
-                                ERROR_CODE_ROLE_WF_PENDING_ALREADY_EXISTS.getCode());
+                        throw new WorkflowClientException(ERROR_CODE_ROLE_WF_PENDING_ALREADY_EXISTS.getCode(),
+                                ERROR_CODE_ROLE_WF_PENDING_ALREADY_EXISTS.getMessage());
                         // Check if the role name already exists in the system.
                     } else if (roleManagementService.isExistingRoleName(roleEntity.getEntityId(),
                             roleEntity.getAudience(), roleEntity.getAudienceId(),
                             IdentityTenantUtil.getTenantDomain(roleEntity.getTenantId()))) {
-                        throw new WorkflowException(ERROR_CODE_ROLE_WF_ROLE_ALREADY_EXISTS.getMessage(),
-                                ERROR_CODE_ROLE_WF_ROLE_ALREADY_EXISTS.getCode());
+                        throw new WorkflowClientException(ROLE_ALREADY_EXISTS.getCode(),
+                                "Role already exist for the role name: " + roleEntity.getEntityId() + " audience: " +
+                                        roleEntity.getAudience() + " audienceId: " + roleEntity.getAudienceId());
                     }
                     // User related validations.
                 } else if (UserStoreWFConstants.ENTITY_TYPE_USER.equals(roleEntity.getEntityType())) {

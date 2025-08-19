@@ -25,10 +25,12 @@ import org.wso2.carbon.identity.core.util.IdentityCoreConstants;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.role.v2.mgt.core.RoleConstants;
+import org.wso2.carbon.identity.role.v2.mgt.core.exception.IdentityRoleManagementClientException;
 import org.wso2.carbon.identity.role.v2.mgt.core.exception.IdentityRoleManagementException;
 import org.wso2.carbon.identity.role.v2.mgt.core.listener.AbstractRoleManagementListener;
 import org.wso2.carbon.identity.role.v2.mgt.core.listener.RoleManagementListener;
 import org.wso2.carbon.identity.role.v2.mgt.core.model.Permission;
+import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowClientException;
 import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowException;
 import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants;
 
@@ -82,6 +84,8 @@ public class RoleManagementActionListener extends AbstractRoleManagementListener
                 throw new IdentityRoleManagementException(RoleConstants.Error.ROLE_WORKFLOW_CREATED.getCode(), "Role " +
                         "creation request is sent to the workflow engine for approval.");
             }
+        } catch (WorkflowClientException e) {
+            throw new IdentityRoleManagementClientException(e.getErrorCode(), e.getMessage(), e);
         } catch (WorkflowException e) {
             throw new IdentityRoleManagementException(e.getErrorCode(), e.getMessage(), e);
         }
