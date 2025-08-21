@@ -18,6 +18,7 @@
 package org.wso2.carbon.user.mgt.workflow.userstore;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.CarbonContext;
@@ -255,12 +256,13 @@ public class UpdateRoleV2UsersWFRequestHandler extends AbstractWorkflowRequestHa
         AbstractUserStoreManager userStoreManager = UserStoreWFUtils.getUserStoreManager();
         for (String userId : userIds) {
             try {
+                if (StringUtils.isBlank(userId)) {
+                    continue;
+                }
                 if (userStoreManager.isExistingUserWithID(userId)) {
                     validUserIds.add(userId);
                 } else {
-                    if (log.isDebugEnabled()) {
-                        log.warn("User with ID: " + userId + " does not exist.");
-                    }
+                    log.debug("User with ID: " + userId + " does not exist.");
                 }
             } catch (org.wso2.carbon.user.core.UserStoreException e) {
                 throw new WorkflowException(e.getMessage(), e);
