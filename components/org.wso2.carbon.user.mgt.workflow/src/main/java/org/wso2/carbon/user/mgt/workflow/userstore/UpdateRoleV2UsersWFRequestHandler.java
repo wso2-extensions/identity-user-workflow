@@ -17,6 +17,8 @@
  */
 package org.wso2.carbon.user.mgt.workflow.userstore;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.CarbonContext;
@@ -167,7 +169,8 @@ public class UpdateRoleV2UsersWFRequestHandler extends AbstractWorkflowRequestHa
             RoleManagementService roleManagementService = IdentityWorkflowDataHolder.getInstance()
                     .getRoleManagementService();
             try {
-                roleManagementService.updateUserListOfRole(roleId, newUsers, deletedUsers, tenantDomain);
+                roleManagementService.updateUserListOfRole(roleId, filterExistingUserIds(newUsers),
+                        filterExistingUserIds(deletedUsers), tenantDomain);
             } catch (IdentityRoleManagementException e) {
                 throw new WorkflowException(e.getMessage(), e);
             }
@@ -235,5 +238,36 @@ public class UpdateRoleV2UsersWFRequestHandler extends AbstractWorkflowRequestHa
             }
         }
         return true;
+    }
+
+    /**
+     * Filters the list of user IDs to only include those that exist in the user store.
+     *
+     * @param userIds List of user IDs to filter.
+     * @return List of valid user IDs that exist in the user store.
+     * @throws WorkflowException if an error occurs while checking user existence.
+     */
+    private List<String> filterExistingUserIds(List<String> userIds) throws WorkflowException {
+
+        List<String> validUserIds = new ArrayList<>();
+        if (CollectionUtils.isEmpty(userIds)) {
+            return validUserIds;
+        }
+        AbstractUserStoreManager userStoreManager = UserStoreWFUtils.getUserStoreManager();
+        for (String userId : userIds) {
+            try {
+                if (StringUtils.isBlank(userId)) {
+                    continue;
+                }
+                if (userStoreManager.isExistingUserWithID(userId)) {
+                    validUserIds.add(userId);
+                } else {
+                    log.debug("User with ID: " + userId + " does not exist.");
+                }
+            } catch (org.wso2.carbon.user.core.UserStoreException e) {
+                throw new WorkflowException(e.getMessage(), e);
+            }
+        }
+        return validUserIds;
     }
 }
