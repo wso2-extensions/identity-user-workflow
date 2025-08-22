@@ -27,6 +27,7 @@ public class UserStoreWFConstants {
 
 
     public static final String ADD_USER_EVENT = "ADD_USER";
+    public static final String SELF_REGISTER_USER_EVENT = "SELF_REGISTER_USER";
     public static final String ADD_ROLE_EVENT = "ADD_ROLE";
     public static final String DELETE_USER_EVENT = "DELETE_USER";
     public static final String DELETE_ROLE_EVENT = "DELETE_ROLE";
