@@ -111,7 +111,10 @@ public class AddRoleV2WFRequestHandler extends AbstractWorkflowRequestHandler {
         wfParams.put(TENANT_DOMAIN, tenantDomain);
         String uuid = UUID.randomUUID().toString();
         RoleEntity[] entities = new RoleEntity[userList.size() + 1];
-        entities[0] = new RoleEntity(roleName, UserStoreWFConstants.ENTITY_TYPE_ROLE, tenantId, audience,
+        Map<String, String> role = new HashMap<>();
+        role.put(ROLE_NAME, roleName);
+        role.put(AUDIENCE_ID, audienceId);
+        entities[0] = new RoleEntity(role.toString(), UserStoreWFConstants.ENTITY_TYPE_ROLE, tenantId, audience,
                 audienceId);
         for (int i = 0; i < userList.size(); i++) {
             entities[i + 1] = new RoleEntity(userList.get(i), UserStoreWFConstants.ENTITY_TYPE_USER, tenantId,
