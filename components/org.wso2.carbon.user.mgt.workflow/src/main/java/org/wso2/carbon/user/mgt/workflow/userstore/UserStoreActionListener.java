@@ -23,6 +23,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.core.AbstractIdentityUserOperationEventListener;
+import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.model.IdentityEventListenerConfig;
 import org.wso2.carbon.identity.core.util.IdentityCoreConstants;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
@@ -99,8 +101,13 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     public boolean doPreAddUser(String userName, Object credential, String[] roleList, Map<String, String> claims,
                                 String profile, UserStoreManager userStoreManager) throws UserStoreException {
 
-        if (!isEnable() || isCalledViaIdentityMgtListners()
-                || !isEventAssociatedWithWorkflow(UserStoreWFConstants.ADD_USER_EVENT) || isJITProvisioningFlow()) {
+        String evenType = UserStoreWFConstants.ADD_USER_EVENT;
+        Flow currentFlow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
+        if (currentFlow != null && Flow.InitiatingPersona.USER.equals((currentFlow.getInitiatingPersona()))) {
+            evenType = UserStoreWFConstants.SELF_REGISTER_USER_EVENT;
+        }
+        if (!isEnable() || isCalledViaIdentityMgtListners() || !isEventAssociatedWithWorkflow(evenType)
+                || isJITProvisioningFlow()) {
             return true;
         }
 
