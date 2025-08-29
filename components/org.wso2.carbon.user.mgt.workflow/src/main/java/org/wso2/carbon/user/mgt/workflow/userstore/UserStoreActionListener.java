@@ -100,7 +100,8 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
                                 String profile, UserStoreManager userStoreManager) throws UserStoreException {
 
         if (!isEnable() || isCalledViaIdentityMgtListners()
-                || !isEventAssociatedWithWorkflow(UserStoreWFConstants.ADD_USER_EVENT) || isJITProvisioningFlow()) {
+                || !isEventAssociatedWithWorkflow(UserStoreWFConstants.ADD_USER_EVENT) || isJITProvisioningFlow()
+                || isAgentUserStore(userStoreManager)) {
             return true;
         }
 
@@ -152,7 +153,8 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     public boolean doPreDeleteUser(String userName, UserStoreManager userStoreManager) throws UserStoreException {
 
         if (!isEnable() || isCalledViaIdentityMgtListners()
-                || !isEventAssociatedWithWorkflow(UserStoreWFConstants.DELETE_USER_EVENT)) {
+                || !isEventAssociatedWithWorkflow(UserStoreWFConstants.DELETE_USER_EVENT)
+                || isAgentUserStore(userStoreManager)) {
             return true;
         }
         try {
@@ -545,5 +547,21 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     private boolean isDisabled() {
 
         return true;
+    }
+
+    /**
+     * Check if the user store is the agent user store.
+     *
+     * @param userStoreManager user store manager
+     * @return true if the user store is the agent user store
+     */
+    private boolean isAgentUserStore(UserStoreManager userStoreManager) {
+
+        String domain = userStoreManager.getRealmConfiguration()
+                .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
+        if (IdentityUtil.getAgentIdentityUserstoreName().equals(domain)) {
+            return true;
+        }
+        return false;
     }
 }
