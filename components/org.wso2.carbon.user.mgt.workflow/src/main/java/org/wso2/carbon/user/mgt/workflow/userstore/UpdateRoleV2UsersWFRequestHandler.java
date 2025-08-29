@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
 import org.wso2.carbon.identity.role.v2.mgt.core.exception.IdentityRoleManagementException;
 import org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService;
@@ -260,6 +261,33 @@ public class UpdateRoleV2UsersWFRequestHandler extends AbstractWorkflowRequestHa
                     continue;
                 }
                 if (userStoreManager.isExistingUserWithID(userId)) {
+                    validUserIds.add(userId);
+                } else {
+                    log.debug("User with ID: " + userId + " does not exist.");
+                }
+            } catch (org.wso2.carbon.user.core.UserStoreException e) {
+                throw new WorkflowException(e.getMessage(), e);
+            }
+        }
+        return validUserIds;
+    }
+
+    private List<String> filterAgents(List<String> userIds) throws WorkflowException {
+
+        List<String> validUserIds = new ArrayList<>();
+        if (CollectionUtils.isEmpty(userIds)) {
+            return validUserIds;
+        }
+        AbstractUserStoreManager userStoreManager = UserStoreWFUtils.getUserStoreManager();
+        for (String userId : userIds) {
+            try {
+                if (StringUtils.isBlank(userId)) {
+                    continue;
+                }
+                String username = userStoreManager.getUserNameFromUserID(userId);
+                String domain = IdentityUtil.extractDomainFromName(username);
+                if (userStoreManager.isExistingUserWithID(userId) &&
+                        !IdentityUtil.getAgentIdentityUserstoreName().equals(domain)) {
                     validUserIds.add(userId);
                 } else {
                     log.debug("User with ID: " + userId + " does not exist.");

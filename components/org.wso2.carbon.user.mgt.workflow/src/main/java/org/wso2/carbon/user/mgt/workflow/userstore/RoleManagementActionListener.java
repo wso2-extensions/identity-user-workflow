@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.user.mgt.workflow.userstore;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.core.model.IdentityEventListenerConfig;
@@ -32,8 +33,13 @@ import org.wso2.carbon.identity.role.v2.mgt.core.listener.RoleManagementListener
 import org.wso2.carbon.identity.role.v2.mgt.core.model.Permission;
 import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowClientException;
 import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowException;
+import org.wso2.carbon.user.api.UserRealm;
+import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
+import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.wso2.carbon.user.mgt.workflow.util.Util.isEventAssociatedWithWorkflow;
@@ -99,6 +105,13 @@ public class RoleManagementActionListener extends AbstractRoleManagementListener
             return;
         }
 
+        List<String> filteredNewUserIDList = filterAgents(newUserIDList);
+        List<String> filteredDeletedUserIDList = filterAgents(deletedUserIDList);
+
+        // If both new and deleted user lists are empty after filtering, return.
+        if (CollectionUtils.isEmpty(filteredNewUserIDList) && CollectionUtils.isEmpty(filteredDeletedUserIDList)) {
+            return;
+        }
         UpdateRoleV2UsersWFRequestHandler addRoleWFRequestHandler = new UpdateRoleV2UsersWFRequestHandler();
         try {
             boolean state = addRoleWFRequestHandler.startUpdateRoleUsersFlow(roleId, newUserIDList,
@@ -126,5 +139,58 @@ public class RoleManagementActionListener extends AbstractRoleManagementListener
         String requestInitiatedOrganization = IdentityTenantUtil.getTenantDomainFromContext();
         String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
         return !StringUtils.equals(requestInitiatedOrganization, tenantDomain);
+    }
+
+    /**
+     * Filters the list of user IDs to only include those that exist in the user store and are not from the agent
+     * identity userstore.
+     *
+     * @param userIds List of user IDs to filter.
+     * @return List of valid user IDs that exist in the user store and are not from the agent identity userstore.
+     * @throws IdentityRoleManagementException if an error occurs while checking user existence.
+     */
+    private List<String> filterAgents(List<String> userIds) throws IdentityRoleManagementException {
+
+        List<String> validUserIds = new ArrayList<>();
+        if (CollectionUtils.isEmpty(userIds)) {
+            return validUserIds;
+        }
+        AbstractUserStoreManager userStoreManager = getUserStoreManager();
+        for (String userId : userIds) {
+            try {
+                if (StringUtils.isBlank(userId)) {
+                    continue;
+                }
+                String username = userStoreManager.getUserNameFromUserID(userId);
+                String domain = IdentityUtil.extractDomainFromName(username);
+                if (userStoreManager.isExistingUserWithID(userId) &&
+                        !IdentityUtil.getAgentIdentityUserstoreName().equals(domain)) {
+                    validUserIds.add(userId);
+                }
+            } catch (org.wso2.carbon.user.core.UserStoreException e) {
+                throw new IdentityRoleManagementException(e.getMessage(), e);
+            }
+        }
+        return validUserIds;
+    }
+
+    /**
+     * Get the user store manager.
+     *
+     * @return user store manager
+     * @throws IdentityRoleManagementException if error while retrieving user realm
+     */
+    private AbstractUserStoreManager getUserStoreManager() throws IdentityRoleManagementException {
+        RealmService realmService = IdentityWorkflowDataHolder.getInstance().getRealmService();
+        UserRealm userRealm;
+        AbstractUserStoreManager userStoreManager;
+        try {
+            userRealm = realmService.getTenantUserRealm(PrivilegedCarbonContext.getThreadLocalCarbonContext()
+                    .getTenantId());
+            userStoreManager = (AbstractUserStoreManager) userRealm.getUserStoreManager();
+        } catch (org.wso2.carbon.user.api.UserStoreException e) {
+            throw new IdentityRoleManagementException("Error while retrieving user realm.", e);
+        }
+        return userStoreManager;
     }
 }

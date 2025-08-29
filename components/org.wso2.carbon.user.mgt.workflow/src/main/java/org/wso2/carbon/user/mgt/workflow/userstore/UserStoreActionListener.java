@@ -44,6 +44,7 @@ import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants;
+import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils;
 import org.wso2.carbon.user.mgt.workflow.util.ValidationResult;
 
 import java.util.Arrays;
@@ -101,7 +102,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
 
         if (!isEnable() || isCalledViaIdentityMgtListners()
                 || !isEventAssociatedWithWorkflow(UserStoreWFConstants.ADD_USER_EVENT) || isJITProvisioningFlow()
-                || isAgentUserStore(userStoreManager)) {
+                || UserStoreWFUtils.isAgentUserStore(userStoreManager)) {
             return true;
         }
 
@@ -154,7 +155,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
 
         if (!isEnable() || isCalledViaIdentityMgtListners()
                 || !isEventAssociatedWithWorkflow(UserStoreWFConstants.DELETE_USER_EVENT)
-                || isAgentUserStore(userStoreManager)) {
+                || UserStoreWFUtils.isAgentUserStore(userStoreManager)) {
             return true;
         }
         try {
@@ -547,21 +548,5 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     private boolean isDisabled() {
 
         return true;
-    }
-
-    /**
-     * Check if the user store is the agent user store.
-     *
-     * @param userStoreManager user store manager
-     * @return true if the user store is the agent user store
-     */
-    private boolean isAgentUserStore(UserStoreManager userStoreManager) {
-
-        String domain = userStoreManager.getRealmConfiguration()
-                .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
-        if (IdentityUtil.getAgentIdentityUserstoreName().equals(domain)) {
-            return true;
-        }
-        return false;
     }
 }
