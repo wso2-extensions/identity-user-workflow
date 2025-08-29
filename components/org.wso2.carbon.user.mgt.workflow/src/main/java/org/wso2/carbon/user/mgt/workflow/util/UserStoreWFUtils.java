@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.CarbonConstants;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.recovery.model.Property;
 import org.wso2.carbon.identity.recovery.util.Utils;
 import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowException;
@@ -253,5 +254,18 @@ public class UserStoreWFUtils {
             throw new WorkflowException("Error while retrieving user realm.", e);
         }
         return userStoreManager;
+    }
+
+    /**
+     * Check if the user store is the agent user store.
+     *
+     * @param userStoreManager user store manager
+     * @return true if the user store is the agent user store
+     */
+    public static boolean isAgentUserStore(UserStoreManager userStoreManager) {
+
+        String domain = userStoreManager.getRealmConfiguration()
+                .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
+        return IdentityUtil.getAgentIdentityUserstoreName().equals(domain);
     }
 }

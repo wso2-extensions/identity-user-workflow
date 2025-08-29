@@ -44,6 +44,7 @@ import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants;
+import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils;
 import org.wso2.carbon.user.mgt.workflow.util.ValidationResult;
 
 import java.util.Arrays;
@@ -100,7 +101,8 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
                                 String profile, UserStoreManager userStoreManager) throws UserStoreException {
 
         if (!isEnable() || isCalledViaIdentityMgtListners()
-                || !isEventAssociatedWithWorkflow(UserStoreWFConstants.ADD_USER_EVENT) || isJITProvisioningFlow()) {
+                || !isEventAssociatedWithWorkflow(UserStoreWFConstants.ADD_USER_EVENT) || isJITProvisioningFlow()
+                || UserStoreWFUtils.isAgentUserStore(userStoreManager)) {
             return true;
         }
 
@@ -152,7 +154,8 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     public boolean doPreDeleteUser(String userName, UserStoreManager userStoreManager) throws UserStoreException {
 
         if (!isEnable() || isCalledViaIdentityMgtListners()
-                || !isEventAssociatedWithWorkflow(UserStoreWFConstants.DELETE_USER_EVENT)) {
+                || !isEventAssociatedWithWorkflow(UserStoreWFConstants.DELETE_USER_EVENT)
+                || UserStoreWFUtils.isAgentUserStore(userStoreManager)) {
             return true;
         }
         try {
