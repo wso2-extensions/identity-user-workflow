@@ -104,12 +104,8 @@ public class RoleManagementActionListener extends AbstractRoleManagementListener
         if (!isEnable() || !isEventAssociatedWithWorkflow(UserStoreWFConstants.UPDATE_ROLE_V2_USERS_EVENT)) {
             return;
         }
-
-        List<String> filteredNewUserIDList = filterAgents(newUserIDList);
-        List<String> filteredDeletedUserIDList = filterAgents(deletedUserIDList);
-
         // If both new and deleted user lists are empty after filtering, return.
-        if (CollectionUtils.isEmpty(filteredNewUserIDList) && CollectionUtils.isEmpty(filteredDeletedUserIDList)) {
+        if (containsOnlyAgentUsers(newUserIDList, deletedUserIDList)) {
             return;
         }
         UpdateRoleV2UsersWFRequestHandler addRoleWFRequestHandler = new UpdateRoleV2UsersWFRequestHandler();
@@ -139,6 +135,21 @@ public class RoleManagementActionListener extends AbstractRoleManagementListener
         String requestInitiatedOrganization = IdentityTenantUtil.getTenantDomainFromContext();
         String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
         return !StringUtils.equals(requestInitiatedOrganization, tenantDomain);
+    }
+
+    /**
+     * Checks whether the provided user ID lists contain only agent users.
+     *
+     * @param newUserIDList     List of new user IDs to be added to the role.
+     * @param deletedUserIDList List of user IDs to be removed from the role.
+     * @return true if both lists contain only agent users, false otherwise.
+     * @throws IdentityRoleManagementException if an error occurs while checking user existence.
+     */
+    private boolean containsOnlyAgentUsers(List<String> newUserIDList, List<String> deletedUserIDList)
+            throws IdentityRoleManagementException {
+
+        return CollectionUtils.isEmpty(filterAgents(newUserIDList)) &&
+                CollectionUtils.isEmpty(filterAgents(deletedUserIDList));
     }
 
     /**
@@ -181,6 +192,7 @@ public class RoleManagementActionListener extends AbstractRoleManagementListener
      * @throws IdentityRoleManagementException if error while retrieving user realm
      */
     private AbstractUserStoreManager getUserStoreManager() throws IdentityRoleManagementException {
+
         RealmService realmService = IdentityWorkflowDataHolder.getInstance().getRealmService();
         UserRealm userRealm;
         AbstractUserStoreManager userStoreManager;
