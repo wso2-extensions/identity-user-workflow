@@ -37,6 +37,7 @@ import static org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants.ADD_RO
 import static org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants.ADD_USER_EVENT;
 import static org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants.DELETE_ROLE_EVENT;
 import static org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants.DELETE_USER_EVENT;
+
 /**
  * User Management Workflow Service class.
  */
