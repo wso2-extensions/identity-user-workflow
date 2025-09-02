@@ -52,6 +52,7 @@ public class UserManagementWorkflowService {
             "/permission/admin/manage/identity/workflow/association/view";
     private static final String USER_VIEW_PERMISSION = "/permission/admin/manage/identity/usermgt/view";
     private static final String ROLE_VIEW_PERMISSION = "/permission/admin/manage/identity/rolemgt/view";
+
     private static final HashMap<String, String> WORKFLOW_OPERATION_PERMISSIONS = new HashMap<String, String>() {{
         put(ADD_USER_EVENT, USER_VIEW_PERMISSION);
         put(ADD_ROLE_EVENT, ROLE_VIEW_PERMISSION);
