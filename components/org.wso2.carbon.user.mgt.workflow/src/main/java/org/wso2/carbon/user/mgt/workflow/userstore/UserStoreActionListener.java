@@ -21,28 +21,19 @@ package org.wso2.carbon.user.mgt.workflow.userstore;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.core.AbstractIdentityUserOperationEventListener;
 import org.wso2.carbon.identity.core.model.IdentityEventListenerConfig;
 import org.wso2.carbon.identity.core.util.IdentityCoreConstants;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
-import org.wso2.carbon.identity.event.IdentityEventConstants;
-import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.carbon.identity.event.event.Event;
-import org.wso2.carbon.identity.event.services.IdentityEventService;
 import org.wso2.carbon.identity.input.validation.mgt.utils.Constants;
-import org.wso2.carbon.identity.password.policy.constants.PasswordPolicyConstants;
 import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowException;
 import org.wso2.carbon.user.api.Permission;
-import org.wso2.carbon.user.api.TenantManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.listener.UserOperationEventListener;
-import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
-import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants;
 import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFUtils;
 import org.wso2.carbon.user.mgt.workflow.util.ValidationResult;
@@ -115,7 +106,6 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
 
         try {
             AddUserWFRequestHandler addUserWFRequestHandler = new AddUserWFRequestHandler();
-            doPasswordPolicyValidation(userName, credential, userStoreManager, addUserWFRequestHandler);
             String domain = userStoreManager.getRealmConfiguration()
                     .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
             return addUserWFRequestHandler.startAddUserFlow(domain, userName, credential, roleList, claims, profile);
@@ -429,71 +419,6 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     private boolean isJITProvisioningFlow() {
 
         return IdentityUtil.threadLocalProperties.get().containsKey(AUTHENTICATION_FROM_FRAMEWORK);
-    }
-
-    private void doPasswordPolicyValidation(String userName, Object credential, UserStoreManager userStoreManager,
-                                            AddUserWFRequestHandler addUserWFRequestHandler)
-            throws UserStoreException {
-
-        try {
-            // Check if add_user operation is engaged with a workflow or not.
-            if (!addUserWFRequestHandler.isAssociated()) {
-                /*
-                 This password policy pattern validation wil be done in later step from governance listeners.
-                 So skip this validation in this stage if workflows are not enabled for add user operation.
-                */
-                return;
-            }
-        } catch (WorkflowException e) {
-            if (e.getErrorCode() != null) {
-                throw new UserStoreException(e.getMessage(), e.getErrorCode(), e);
-            }
-            // Sending e.getMessage() since it is required to give error message to end user.
-            throw new UserStoreException(e.getMessage(), e);
-        }
-
-        String eventName = IdentityEventConstants.Event.VALIDATE_PASSWORD;
-        String userTenantDomain = getUserTenantDomain(userStoreManager);
-        HashMap<String, Object> properties = new HashMap<>();
-        properties.put(IdentityEventConstants.EventProperty.USER_NAME, userName);
-        properties.put(IdentityEventConstants.EventProperty.CREDENTIAL, credential);
-        properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, userTenantDomain);
-        // Publish password validation event.
-        handleEvent(eventName, properties);
-    }
-
-    private String getUserTenantDomain(UserStoreManager userStoreManager) throws UserStoreException {
-
-        int tenantId = userStoreManager.getTenantId();
-        String userTenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
-        try {
-            RealmService realmService = IdentityWorkflowDataHolder.getInstance().getRealmService();
-            TenantManager tenantManager = realmService.getTenantManager();
-            userTenantDomain = tenantManager.getDomain(tenantId);
-        } catch (org.wso2.carbon.user.api.UserStoreException e) {
-            log.error("Unable to get the domain from realmService for tenant: " + tenantId, e);
-        }
-        return userTenantDomain;
-    }
-
-    private void handleEvent(String eventName, HashMap<String, Object> properties) throws UserStoreException {
-
-        Event identityMgtEvent = new Event(eventName, properties);
-        try {
-            IdentityEventService eventService = IdentityWorkflowDataHolder.getInstance().getIdentityEventService();
-            eventService.handleEvent(identityMgtEvent);
-        } catch (IdentityEventException e) {
-            String errorCode = e.getErrorCode();
-
-            if (StringUtils.isNotEmpty(errorCode)) {
-                if (PasswordPolicyConstants.ErrorMessages.ERROR_CODE_VALIDATING_PASSWORD_POLICY.getCode().
-                        equals(errorCode) || PasswordPolicyConstants.ErrorMessages.
-                        ERROR_CODE_LOADING_PASSWORD_POLICY_CLASSES.getCode().equals(errorCode)) {
-                    throw new UserStoreException(e.getMessage(), e);
-                }
-            }
-            throw new UserStoreException("Error when handling event : " + eventName, e);
-        }
     }
 
     private void validateUserName(String userName, Object credential, String[] roleList, Map<String, String> claims,
