@@ -23,6 +23,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.core.AbstractIdentityUserOperationEventListener;
+import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.model.IdentityEventListenerConfig;
 import org.wso2.carbon.identity.core.util.IdentityCoreConstants;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
@@ -100,9 +102,20 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     public boolean doPreAddUser(String userName, Object credential, String[] roleList, Map<String, String> claims,
                                 String profile, UserStoreManager userStoreManager) throws UserStoreException {
 
-        if (!isEnable() || isCalledViaIdentityMgtListners()
-                || !isEventAssociatedWithWorkflow(UserStoreWFConstants.ADD_USER_EVENT) || isJITProvisioningFlow()
+        if (!isEnable() || isCalledViaIdentityMgtListners() || isJITProvisioningFlow()
                 || UserStoreWFUtils.isAgentUserStore(userStoreManager)) {
+            return true;
+        }
+
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
+        String eventType = UserStoreWFConstants.ADD_USER_EVENT;
+        if (flow != null && Flow.Name.REGISTER.equals(flow.getName()) &&
+                Flow.InitiatingPersona.USER.equals(flow.getInitiatingPersona())) {
+            log.debug("User self registration flow is detected.");
+            eventType = UserStoreWFConstants.SELF_REGISTER_USER_EVENT;
+        }
+
+        if (!isEventAssociatedWithWorkflow(eventType)) {
             return true;
         }
 
@@ -114,7 +127,12 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
         validatePassword(credential, userName, roleList, claims, profile, userStoreManager);
 
         try {
-            AddUserWFRequestHandler addUserWFRequestHandler = new AddUserWFRequestHandler();
+            AddUserWFRequestHandler addUserWFRequestHandler;
+            if (UserStoreWFConstants.SELF_REGISTER_USER_EVENT.equals(eventType)) {
+                addUserWFRequestHandler = new SelfRegisterUserWFRequestHandler();
+            } else {
+                addUserWFRequestHandler = new AddUserWFRequestHandler();
+            }
             doPasswordPolicyValidation(userName, credential, userStoreManager, addUserWFRequestHandler);
             String domain = userStoreManager.getRealmConfiguration()
                     .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
@@ -439,7 +457,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
             // Check if add_user operation is engaged with a workflow or not.
             if (!addUserWFRequestHandler.isAssociated()) {
                 /*
-                 This password policy pattern validation wil be done in later step from governance listeners.
+                 This password policy pattern validation will be done in later step from governance listeners.
                  So skip this validation in this stage if workflows are not enabled for add user operation.
                 */
                 return;
