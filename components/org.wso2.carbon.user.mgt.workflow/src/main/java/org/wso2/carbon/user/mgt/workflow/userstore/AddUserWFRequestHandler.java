@@ -297,7 +297,9 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
                                 ERROR_CODE_USER_WF_USER_ALREADY_EXISTS.getCode());
                         // Check if user already exists in pending add user workflow.
                     } else if (workflowService
-                            .entityHasPendingWorkflowsOfType(entity, UserStoreWFConstants.ADD_USER_EVENT)) {
+                            .entityHasPendingWorkflowsOfType(entity, UserStoreWFConstants.ADD_USER_EVENT) ||
+                            workflowService.entityHasPendingWorkflowsOfType(entity,
+                                    UserStoreWFConstants.SELF_REGISTER_USER_EVENT)) {
                         throw new WorkflowException(ERROR_CODE_USER_WF_ALREADY_EXISTS.getMessage(),
                                 ERROR_CODE_USER_WF_ALREADY_EXISTS.getCode());
                     }
