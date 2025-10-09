@@ -133,9 +133,7 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
         wfParams.put(USER_STORE_DOMAIN, userStoreDomain);
         wfParams.put(ROLE_LIST, Arrays.asList(roleList));
 
-        for (String excludedClaim : EXCLUDED_CLAIMS) {
-            claims.remove(excludedClaim);
-        }
+        claims.keySet().removeAll(EXCLUDED_CLAIMS);
         wfParams.put(CLAIM_LIST, claims);
         wfParams.put(PROFILE, profile);
         nonWfParams.put(CREDENTIAL, encryptedCredentials);
