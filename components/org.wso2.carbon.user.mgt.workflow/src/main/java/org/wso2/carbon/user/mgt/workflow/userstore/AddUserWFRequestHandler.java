@@ -74,6 +74,10 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
     private static final Map<String, String> PARAM_DEFINITION;
     private static final Log log = LogFactory.getLog(AddUserWFRequestHandler.class);
 
+    private static final List<String> EXCLUDED_CLAIMS = Arrays.asList("http://wso2.org/claims/created",
+            "http://wso2.org/claims/modified", "http://wso2.org/claims/location",
+            "http://wso2.org/claims/resourceType");
+
     static {
         PARAM_DEFINITION = new LinkedHashMap<>();
         PARAM_DEFINITION.put(USERNAME, WorkflowDataType.STRING_TYPE);
@@ -128,6 +132,10 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
         wfParams.put(USERNAME, userName);
         wfParams.put(USER_STORE_DOMAIN, userStoreDomain);
         wfParams.put(ROLE_LIST, Arrays.asList(roleList));
+
+        for (String excludedClaim : EXCLUDED_CLAIMS) {
+            claims.remove(excludedClaim);
+        }
         wfParams.put(CLAIM_LIST, claims);
         wfParams.put(PROFILE, profile);
         nonWfParams.put(CREDENTIAL, encryptedCredentials);
