@@ -21,6 +21,7 @@ package org.wso2.carbon.user.mgt.workflow.internal;
 import org.osgi.framework.BundleContext;
 import org.wso2.carbon.identity.event.services.IdentityEventService;
 import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
+import org.wso2.carbon.identity.rule.evaluation.api.service.RuleEvaluationService;
 import org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService;
 import org.wso2.carbon.user.core.listener.UserManagementErrorEventListener;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -38,6 +39,7 @@ public class IdentityWorkflowDataHolder {
     private static IdentityWorkflowDataHolder instance = new IdentityWorkflowDataHolder();
 
     private RealmService realmService;
+    private RuleEvaluationService ruleEvaluationService;
     private ConfigurationContextService configurationContextService;
     private BundleContext bundleContext;
     private WorkflowManagementService workflowService;
@@ -62,6 +64,17 @@ public class IdentityWorkflowDataHolder {
     public void setRealmService(RealmService realmService) {
 
         this.realmService = realmService;
+    }
+
+    public RuleEvaluationService getRuleEvaluationService() {
+        if (ruleEvaluationService == null) {
+            throw new RuntimeException("RuleEvaluationService not initialized");
+        }
+        return ruleEvaluationService;
+    }
+
+    public void setRuleEvaluationService(RuleEvaluationService ruleEvaluationService) {
+        this.ruleEvaluationService = ruleEvaluationService;
     }
 
     public ConfigurationContextService getConfigurationContextService() {

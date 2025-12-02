@@ -18,6 +18,8 @@
 
 package org.wso2.carbon.user.mgt.workflow.userstore;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
@@ -31,6 +33,9 @@ import org.wso2.carbon.identity.role.v2.mgt.core.exception.IdentityRoleManagemen
 import org.wso2.carbon.identity.role.v2.mgt.core.listener.AbstractRoleManagementListener;
 import org.wso2.carbon.identity.role.v2.mgt.core.listener.RoleManagementListener;
 import org.wso2.carbon.identity.role.v2.mgt.core.model.Permission;
+import org.wso2.carbon.identity.rule.evaluation.api.exception.RuleEvaluationException;
+import org.wso2.carbon.identity.rule.evaluation.api.model.FlowContext;
+import org.wso2.carbon.identity.rule.evaluation.api.model.FlowType;
 import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowClientException;
 import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowException;
 import org.wso2.carbon.user.api.UserRealm;
@@ -38,9 +43,12 @@ import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants;
+import org.wso2.carbon.identity.rule.evaluation.api.model.RuleEvaluationResult;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.wso2.carbon.user.mgt.workflow.util.Util.isEventAssociatedWithWorkflow;
 
@@ -48,6 +56,8 @@ import static org.wso2.carbon.user.mgt.workflow.util.Util.isEventAssociatedWithW
  * Role management action listener.
  */
 public class RoleManagementActionListener extends AbstractRoleManagementListener {
+
+    private static final Log log = LogFactory.getLog(RoleManagementActionListener.class);
 
     @Override
     public boolean isEnable() {
@@ -104,6 +114,39 @@ public class RoleManagementActionListener extends AbstractRoleManagementListener
         if (!isEnable() || !isEventAssociatedWithWorkflow(UserStoreWFConstants.UPDATE_ROLE_V2_USERS_EVENT)) {
             return;
         }
+            // --- RULE EVALUATION START ---
+        try {
+            // 1. Define Rule ID (from your DB)
+            String ruleId = "76b60296-771a-4a32-9476-74d345eb76cb";
+
+            // 2. Prepare Data (The "GrantType" Hack)
+            Map<String, Object> ruleContextData = new HashMap<>();
+            ruleContextData.put("grantType", "password");
+
+            FlowContext flowContext = new FlowContext(FlowType.PRE_UPDATE_ROLE, ruleContextData);
+
+            // 3. Evaluate
+            RuleEvaluationResult result = IdentityWorkflowDataHolder.getInstance()
+                    .getRuleEvaluationService()
+                    .evaluate(ruleId, flowContext, tenantDomain);
+
+                // 4. Check Result
+            if (result.isRuleSatisfied()) {
+                // LOGIC: If rule is TRUE -> Bypass Workflow (Allow immediate execution)
+                log.info("Rule satisfied. Bypassing workflow approval for role update.");
+                return; // Exiting here means the underlying User Store operation proceeds immediately.
+            }
+
+            // LOGIC: If rule is FALSE -> Do nothing here, let it fall through to the code below to trigger workflow.
+            log.info("Rule NOT satisfied. Proceeding to trigger Workflow.");
+
+        } catch (RuleEvaluationException e) {
+            // Fail Safe: If rule engine errors out, do we block or allow?
+            // Usually safer to fall through and trigger workflow (Fail Closed).
+            log.error("Error evaluating rule. Proceeding with standard workflow trigger.", e);
+        }
+        // --- RULE EVALUATION END ---
+
         // If both new and deleted user lists are empty after filtering, return.
         if (containsOnlyAgentUsers(newUserIDList, deletedUserIDList)) {
             return;
