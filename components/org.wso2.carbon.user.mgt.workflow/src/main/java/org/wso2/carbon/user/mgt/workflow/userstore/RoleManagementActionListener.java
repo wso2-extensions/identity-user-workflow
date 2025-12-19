@@ -114,39 +114,6 @@ public class RoleManagementActionListener extends AbstractRoleManagementListener
         if (!isEnable() || !isEventAssociatedWithWorkflow(UserStoreWFConstants.UPDATE_ROLE_V2_USERS_EVENT)) {
             return;
         }
-            // --- RULE EVALUATION START ---
-        try {
-            // 1. Define Rule ID (from your DB)
-            String ruleId = "76b60296-771a-4a32-9476-74d345eb76cb";
-
-            // 2. Prepare Data (The "GrantType" Hack)
-            Map<String, Object> ruleContextData = new HashMap<>();
-            ruleContextData.put("grantType", "password");
-
-            FlowContext flowContext = new FlowContext(FlowType.PRE_UPDATE_ROLE, ruleContextData);
-
-            // 3. Evaluate
-            RuleEvaluationResult result = IdentityWorkflowDataHolder.getInstance()
-                    .getRuleEvaluationService()
-                    .evaluate(ruleId, flowContext, tenantDomain);
-
-                // 4. Check Result
-            if (result.isRuleSatisfied()) {
-                // LOGIC: If rule is TRUE -> Bypass Workflow (Allow immediate execution)
-                log.info("Rule satisfied. Bypassing workflow approval for role update.");
-                return; // Exiting here means the underlying User Store operation proceeds immediately.
-            }
-
-            // LOGIC: If rule is FALSE -> Do nothing here, let it fall through to the code below to trigger workflow.
-            log.info("Rule NOT satisfied. Proceeding to trigger Workflow.");
-
-        } catch (RuleEvaluationException e) {
-            // Fail Safe: If rule engine errors out, do we block or allow?
-            // Usually safer to fall through and trigger workflow (Fail Closed).
-            log.error("Error evaluating rule. Proceeding with standard workflow trigger.", e);
-        }
-        // --- RULE EVALUATION END ---
-
         // If both new and deleted user lists are empty after filtering, return.
         if (containsOnlyAgentUsers(newUserIDList, deletedUserIDList)) {
             return;
