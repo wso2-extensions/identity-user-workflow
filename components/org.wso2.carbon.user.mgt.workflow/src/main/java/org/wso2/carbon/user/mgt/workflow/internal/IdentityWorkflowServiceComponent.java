@@ -35,6 +35,7 @@ import org.wso2.carbon.identity.workflow.mgt.extension.WorkflowRequestHandler;
 import org.wso2.carbon.user.core.listener.UserManagementErrorEventListener;
 import org.wso2.carbon.user.core.listener.UserOperationEventListener;
 import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.carbon.user.mgt.workflow.providers.WorkFlowRuleEvaluationDataProvider;
 import org.wso2.carbon.user.mgt.workflow.userstore.*;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
