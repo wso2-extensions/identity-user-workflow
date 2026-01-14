@@ -121,9 +121,6 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                     case USER_DOMAIN:
                         addUserDomainFieldValue(fieldValues, field, contextData);
                         break;
-                    case ROLE_NAME:
-                        addRoleNameFieldValue(fieldValues, field, contextData, tenantDomain);
-                        break;
                     case ROLE_AUDIENCE_ID:
                         addRoleAudienceIdFieldValue(fieldValues, field, contextData, tenantDomain);
                         break;
@@ -137,7 +134,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                         addUserGroupsFieldValue(fieldValues, field, contextData, tenantDomain);
                         break;
                     default:
-                        throw new RuleEvaluationDataProviderException("Unsupported field: " + fieldName);
+                        throw new RuleEvaluationDataProviderException("Unsupported field by WF rule evaluation data provider: " + fieldName);
                 }
             } catch (RuleEvaluationDataProviderException e) {
                 // Re-throw as is.
@@ -171,7 +168,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
     }
 
     /**
-     * Add user roles field value from context data or fetch from user store.
+     * Add user role field value from context data or fetch from user store.
      */
     private void addUserRolesFieldValue(List<FieldValue> fieldValues, Field field, Map<String, Object> contextData,
                                        String tenantDomain) throws RuleEvaluationDataProviderException {
@@ -230,33 +227,40 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
 
     /**
      * Add user claim field value by fetching from user store.
+     * First checks if the claim value is available in context data, otherwise fetches from user store.
      */
     private void addUserClaimFieldValue(List<FieldValue> fieldValues, Field field, Map<String, Object> contextData,
                                        String claimUri, String tenantDomain)
                                        throws RuleEvaluationDataProviderException {
 
+        // First try to get the claim value directly from context data.
+        String claimValue = (String) contextData.get(claimUri);
+        if (StringUtils.isNotBlank(claimValue)) {
+            fieldValues.add(new FieldValue(field.getName(), claimValue, ValueType.STRING));
+            return;
+        }
+
+        // If not in context, fetch from user store using username.
         String username = (String) contextData.get("Username");
+        if (StringUtils.isBlank(username)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Cannot fetch claim " + claimUri + " without Username in context.");
+            }
+            return;
+        }
 
         try {
             AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) CarbonContext
                     .getThreadLocalCarbonContext().getUserRealm().getUserStoreManager();
 
-            String userId = userStoreManager.getUserIDFromUserName(username);
-            if (StringUtils.isBlank(userId)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Could not resolve user ID for username: " + username);
-                }
-                return;
-            }
-
-            Map<String, String> claims = userStoreManager.getUserClaimValuesWithID(
-                    userId,
+            Map<String, String> claims = userStoreManager.getUserClaimValues(
+                    username,
                     new String[]{claimUri},
                     UserCoreConstants.DEFAULT_PROFILE
             );
 
             if (claims != null && claims.containsKey(claimUri)) {
-                String claimValue = claims.get(claimUri);
+                claimValue = claims.get(claimUri);
                 if (StringUtils.isNotBlank(claimValue)) {
                     fieldValues.add(new FieldValue(field.getName(), claimValue, ValueType.STRING));
                 }
@@ -264,39 +268,6 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
         } catch (org.wso2.carbon.user.api.UserStoreException e) {
             throw new RuleEvaluationDataProviderException(
                     "Error retrieving user claim " + claimUri + " for username: " + username, e);
-        }
-    }
-
-
-    /**
-     * Add role name field value by fetching from role management service.
-     */
-    private void addRoleNameFieldValue(List<FieldValue> fieldValues, Field field, Map<String, Object> contextData,
-                                      String tenantDomain) throws RuleEvaluationDataProviderException {
-
-        String roleId = (String) contextData.get("Role ID");
-        if (StringUtils.isBlank(roleId)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Cannot fetch role name without Role ID in context.");
-            }
-            return;
-        }
-
-        RoleBasicInfo roleBasicInfo = null;
-        try {
-            // Fetch Role Related Details using RoleManagementService.
-            RoleManagementService roleManagementService = IdentityWorkflowDataHolder.getInstance()
-                    .getRoleManagementService();
-
-            if (roleManagementService != null) {
-                roleBasicInfo = roleManagementService.getRoleBasicInfoById(roleId, tenantDomain);
-            }
-        } catch (IdentityRoleManagementException e) {
-            throw new RuleEvaluationDataProviderException("Error retrieving role info for roleId: " + roleId, e);
-        }
-
-        if (roleBasicInfo != null && StringUtils.isNotBlank(roleBasicInfo.getName())) {
-            fieldValues.add(new FieldValue(field.getName(), roleBasicInfo.getName(), ValueType.STRING));
         }
     }
 
@@ -316,9 +287,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
         // If not in context, fetch using Role ID from RoleManagementService.
         String roleId = (String) contextData.get("Role ID");
         if (StringUtils.isBlank(roleId)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Cannot fetch role audience ID without Role ID in context.");
-            }
+            log.debug("Cannot fetch role audience ID without Role ID in context.");
             return;
         }
 
