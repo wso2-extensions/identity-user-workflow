@@ -18,8 +18,6 @@
 
 package org.wso2.carbon.user.mgt.workflow.userstore;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
@@ -33,9 +31,6 @@ import org.wso2.carbon.identity.role.v2.mgt.core.exception.IdentityRoleManagemen
 import org.wso2.carbon.identity.role.v2.mgt.core.listener.AbstractRoleManagementListener;
 import org.wso2.carbon.identity.role.v2.mgt.core.listener.RoleManagementListener;
 import org.wso2.carbon.identity.role.v2.mgt.core.model.Permission;
-import org.wso2.carbon.identity.rule.evaluation.api.exception.RuleEvaluationException;
-import org.wso2.carbon.identity.rule.evaluation.api.model.FlowContext;
-import org.wso2.carbon.identity.rule.evaluation.api.model.FlowType;
 import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowClientException;
 import org.wso2.carbon.identity.workflow.mgt.exception.WorkflowException;
 import org.wso2.carbon.user.api.UserRealm;
@@ -43,12 +38,9 @@ import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants;
-import org.wso2.carbon.identity.rule.evaluation.api.model.RuleEvaluationResult;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.wso2.carbon.user.mgt.workflow.util.Util.isEventAssociatedWithWorkflow;
 
@@ -56,8 +48,6 @@ import static org.wso2.carbon.user.mgt.workflow.util.Util.isEventAssociatedWithW
  * Role management action listener.
  */
 public class RoleManagementActionListener extends AbstractRoleManagementListener {
-
-    private static final Log log = LogFactory.getLog(RoleManagementActionListener.class);
 
     @Override
     public boolean isEnable() {
