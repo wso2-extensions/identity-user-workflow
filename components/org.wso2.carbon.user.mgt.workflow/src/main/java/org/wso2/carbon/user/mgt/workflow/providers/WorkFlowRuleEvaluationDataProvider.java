@@ -40,12 +40,12 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
      * Enum for supported non-claim rule fields in workflow operations.
      */
     private enum RuleField {
-        USER_DOMAIN("user_domain"),
-        ROLE_NAME("role_name"),
-        ROLE_AUDIENCE_ID("audience_id"),
-        ROLE_ID("role_id"),
-        USER_ROLES("user_roles"),
-        USER_GROUPS("user_groups");
+        USER_DOMAIN("user.domain"),
+        ROLE_NAME("role.name"),
+        ROLE_AUDIENCE_ID("audience.id"),
+        ROLE_ID("role.id"),
+        USER_ROLES("user.roles"),
+        USER_GROUPS("user.groups");
 
         private final String fieldName;
 
