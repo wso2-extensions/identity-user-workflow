@@ -85,7 +85,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
 
     @Override
     public FlowType getSupportedFlowType() {
-        return FlowType.WORKFLOW_RULES;
+        return FlowType.APPROVAL_WORKFLOW;
     }
 
     @Override
