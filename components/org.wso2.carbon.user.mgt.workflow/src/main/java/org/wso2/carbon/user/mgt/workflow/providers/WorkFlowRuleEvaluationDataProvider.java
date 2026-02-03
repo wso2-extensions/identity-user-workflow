@@ -33,19 +33,27 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
 
     private static final Log log = LogFactory.getLog(WorkFlowRuleEvaluationDataProvider.class);
 
-    // Claim URI prefix.
     private static final String WSO2_CLAIM_URI_PREFIX = "http://wso2.org/claims/";
+
+    public static final String USERS_TO_BE_ADDED = "Users to be Added";
+    public static final String USERS_TO_BE_DELETED = "Users to be Deleted";
 
     /**
      * Enum for supported non-claim rule fields in workflow operations.
      */
     private enum RuleField {
         USER_DOMAIN("user.domain"),
-        ROLE_NAME("role.name"),
-        ROLE_AUDIENCE_ID("audience.id"),
-        ROLE_ID("role.id"),
+        USER_GROUPS("user.groups"),
         USER_ROLES("user.roles"),
-        USER_GROUPS("user.groups");
+        INITIATOR_DOMAIN("initiator.domain"),
+        INITIATOR_GROUPS("initiator.groups"),
+        INITIATOR_ROLES("initiator.roles"),
+        ROLE("role"),
+        ROLE_AUDIENCE("role.audience"),
+        ROLE_PERMISSIONS("role.permissions"),
+        ROLE_HAS_ADDED_USERS("role.hasAddedUsers"),
+        ROLE_HAS_DELETED_USERS("role.hasDeletedUsers");
+
 
         private final String fieldName;
 
@@ -105,7 +113,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
             String fieldName = field.getName();
 
             try {
-                // First check if the field is a claim URI.
+                // check if the field is a claim URI.
                 if (isClaimUri(fieldName)) {
                     addUserClaimFieldValue(fieldValues, field, contextData, fieldName, tenantDomain);
                     continue;
@@ -121,10 +129,10 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                     case USER_DOMAIN:
                         addUserDomainFieldValue(fieldValues, field, contextData);
                         break;
-                    case ROLE_AUDIENCE_ID:
+                    case ROLE_AUDIENCE:
                         addRoleAudienceIdFieldValue(fieldValues, field, contextData, tenantDomain);
                         break;
-                    case ROLE_ID:
+                    case ROLE:
                         addRoleIdFieldValue(fieldValues, field, contextData);
                         break;
                     case USER_ROLES:
@@ -132,6 +140,12 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                         break;
                     case USER_GROUPS:
                         addUserGroupsFieldValue(fieldValues, field, contextData, tenantDomain);
+                        break;
+                    case ROLE_HAS_ADDED_USERS:
+                        addRoleHasAddedUsersFieldValue(fieldValues, field, contextData);
+                        break;
+                    case ROLE_HAS_DELETED_USERS:
+                        addRoleHasDeletedUsersFieldValue(fieldValues, field, contextData);
                         break;
                     default:
                         throw new RuleEvaluationDataProviderException("Unsupported field by WF rule evaluation data provider: " + fieldName);
@@ -308,4 +322,48 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
             fieldValues.add(new FieldValue(field.getName(), roleBasicInfo.getAudienceId(), ValueType.REFERENCE));
         }
     }
+
+     /**
+     * Add role has added users field value from context data.
+     * Checks if the "Users to be Added" list in context data is non-empty.
+     *
+     * @param fieldValues List of field values to add to.
+     * @param field       Field being processed.
+     * @param contextData Context data from the flow context.
+     */
+    private void addRoleHasAddedUsersFieldValue(List<FieldValue> fieldValues, Field field,
+                                                Map<String, Object> contextData) {
+
+        List<?> usersToBeAdded = (List<?>) contextData.get(USERS_TO_BE_ADDED);
+        boolean hasAddedUsers = CollectionUtils.isNotEmpty(usersToBeAdded);
+        fieldValues.add(new FieldValue(field.getName(), String.valueOf(hasAddedUsers), ValueType.STRING));
+
+        if (log.isDebugEnabled()) {
+            log.debug("Role has added users: " + hasAddedUsers + " (users to add count: " +
+                    (usersToBeAdded != null ? usersToBeAdded.size() : 0) + ")");
+        }
+    }
+
+    /**
+     * Add role has deleted users field value from context data.
+     * Checks if the "Users to be Deleted" list in context data is non-empty.
+     *
+     * @param fieldValues List of field values to add to.
+     * @param field       Field being processed.
+     * @param contextData Context data from the flow context.
+     */
+    private void addRoleHasDeletedUsersFieldValue(List<FieldValue> fieldValues, Field field,
+                                                  Map<String, Object> contextData) {
+
+        List<?> usersToBeDeleted = (List<?>) contextData.get(USERS_TO_BE_DELETED);
+        boolean hasDeletedUsers = CollectionUtils.isNotEmpty(usersToBeDeleted);
+        fieldValues.add(new FieldValue(field.getName(), String.valueOf(hasDeletedUsers), ValueType.STRING));
+
+        if (log.isDebugEnabled()) {
+            log.debug("Role has deleted users: " + hasDeletedUsers + " (users to delete count: " +
+                    (usersToBeDeleted != null ? usersToBeDeleted.size() : 0) + ")");
+        }
+    }
+
+
 }
