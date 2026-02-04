@@ -20,6 +20,8 @@ package org.wso2.carbon.user.mgt.workflow.internal;
 
 import org.osgi.framework.BundleContext;
 import org.wso2.carbon.identity.event.services.IdentityEventService;
+import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
+import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
 import org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService;
 import org.wso2.carbon.user.core.listener.UserManagementErrorEventListener;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -38,6 +40,9 @@ public class IdentityWorkflowDataHolder {
     private BundleContext bundleContext;
     private WorkflowManagementService workflowService;
     private IdentityEventService identityEventService;
+    private RoleManagementService roleManagementService;
+    private OrganizationManager organizationManager;
+
     private Map<Integer, UserManagementErrorEventListener> errorEventListenerMap =  new TreeMap<>();
 
     public static IdentityWorkflowDataHolder getInstance() {
@@ -115,5 +120,23 @@ public class IdentityWorkflowDataHolder {
     public void setIdentityEventService(IdentityEventService eventMgtService) {
 
         this.identityEventService = eventMgtService;
+    }
+
+    public RoleManagementService getRoleManagementService() {
+
+        return roleManagementService;
+    }
+
+    public void setRoleManagementService(RoleManagementService roleManagementService) {
+
+        this.roleManagementService = roleManagementService;
+    }
+
+    public OrganizationManager getOrganizationManager() {
+        return this.organizationManager;
+    }
+
+    public void setOrganizationManager(OrganizationManager organizationManager) {
+        this.organizationManager = organizationManager;
     }
 }
