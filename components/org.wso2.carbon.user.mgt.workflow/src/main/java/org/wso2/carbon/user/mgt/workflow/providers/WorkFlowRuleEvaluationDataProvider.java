@@ -129,17 +129,17 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                     case USER_DOMAIN:
                         addUserDomainFieldValue(fieldValues, field, contextData);
                         break;
+                    case USER_GROUPS:
+                        addUserGroupsFieldValue(fieldValues, field, contextData, tenantDomain);
+                        break;
+                    case USER_ROLES:
+                        addUserRolesFieldValue(fieldValues, field, contextData, tenantDomain);
+                        break;
                     case ROLE_AUDIENCE:
                         addRoleAudienceIdFieldValue(fieldValues, field, contextData, tenantDomain);
                         break;
                     case ROLE:
                         addRoleIdFieldValue(fieldValues, field, contextData);
-                        break;
-                    case USER_ROLES:
-                        addUserRolesFieldValue(fieldValues, field, contextData, tenantDomain);
-                        break;
-                    case USER_GROUPS:
-                        addUserGroupsFieldValue(fieldValues, field, contextData, tenantDomain);
                         break;
                     case ROLE_HAS_ADDED_USERS:
                         addRoleHasAddedUsersFieldValue(fieldValues, field, contextData);
