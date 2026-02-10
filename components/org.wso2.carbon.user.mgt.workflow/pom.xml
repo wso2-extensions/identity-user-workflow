@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~ Copyright (c) 2015-2026, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
   ~
   ~ WSO2 Inc. licenses this file to you under the Apache License,
   ~ Version 2.0 (the "License"); you may not use this file except
@@ -80,12 +80,6 @@
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>${jacoco.version}</version>
         </dependency>
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>1.17.1</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
 
     <build>
@@ -102,7 +96,6 @@
                             org.wso2.carbon.user.mgt.workflow.internal,
                         </Private-Package>
                         <Import-Package>
-                            org.wso2.carbon.identity.rule.evaluation.api.*; version="${carbon.identity.package.import.version.range}",
                             org.apache.commons.lang; version="${commons-lang.wso2.osgi.version.range}",
                             org.apache.commons.logging; version="${commons-logging.osgi.version.range}",
                             org.apache.commons.collections; version="${commons-collections.wso2.osgi.version.range}",
@@ -134,6 +127,7 @@
                             org.wso2.carbon.identity.input.validation.mgt.utils; version="${carbon.identity.package.import.version.range}",
                             org.wso2.carbon.identity.organization.management.organization.user.sharing;
                             version="${org.wso2.identity.organization.mgt.import.version.range}",
+                            org.wso2.carbon.identity.rule.evaluation.api.*; version="${carbon.identity.package.import.version.range}",
                         </Import-Package>
                         <Export-Package>
                             !org.wso2.carbon.user.mgt.workflow.internal;version="${identity.user.workflow.exp.pkg.version}",

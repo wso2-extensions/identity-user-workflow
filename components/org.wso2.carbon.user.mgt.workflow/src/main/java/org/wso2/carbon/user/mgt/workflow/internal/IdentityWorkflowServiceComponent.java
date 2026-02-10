@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2015-2026, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -36,7 +36,20 @@ import org.wso2.carbon.user.core.listener.UserManagementErrorEventListener;
 import org.wso2.carbon.user.core.listener.UserOperationEventListener;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.mgt.workflow.providers.WorkFlowRuleEvaluationDataProvider;
-import org.wso2.carbon.user.mgt.workflow.userstore.*;
+import org.wso2.carbon.user.mgt.workflow.userstore.AddRoleV2WFRequestHandler;
+import org.wso2.carbon.user.mgt.workflow.userstore.AddRoleWFRequestHandler;
+import org.wso2.carbon.user.mgt.workflow.userstore.AddUserWFRequestHandler;
+import org.wso2.carbon.user.mgt.workflow.userstore.DeleteMultipleClaimsWFRequestHandler;
+import org.wso2.carbon.user.mgt.workflow.userstore.DeleteRoleWFRequestHandler;
+import org.wso2.carbon.user.mgt.workflow.userstore.DeleteUserWFRequestHandler;
+import org.wso2.carbon.user.mgt.workflow.userstore.RoleManagementActionListener;
+import org.wso2.carbon.user.mgt.workflow.userstore.SelfRegisterUserWFRequestHandler;
+import org.wso2.carbon.user.mgt.workflow.userstore.SetMultipleClaimsWFRequestHandler;
+import org.wso2.carbon.user.mgt.workflow.userstore.UpdateRoleNameWFRequestHandler;
+import org.wso2.carbon.user.mgt.workflow.userstore.UpdateRoleUsersWFRequestHandler;
+import org.wso2.carbon.user.mgt.workflow.userstore.UpdateRoleV2UsersWFRequestHandler;
+import org.wso2.carbon.user.mgt.workflow.userstore.UpdateUserRolesWFRequestHandler;
+import org.wso2.carbon.user.mgt.workflow.userstore.UserStoreActionListener;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
 /**
@@ -63,14 +76,14 @@ public class IdentityWorkflowServiceComponent {
             service = RuleEvaluationService.class,
             cardinality = ReferenceCardinality.MANDATORY,
             policy = ReferencePolicy.DYNAMIC,
-            unbind = "unsetRuleEvaluationService"
-    )
-
+            unbind = "unsetRuleEvaluationService")
     protected void setRuleEvaluationService(RuleEvaluationService ruleEvaluationService) {
+
         IdentityWorkflowDataHolder.getInstance().setRuleEvaluationService(ruleEvaluationService);
     }
 
     protected void unsetRuleEvaluationService(RuleEvaluationService ruleEvaluationService) {
+
         IdentityWorkflowDataHolder.getInstance().setRuleEvaluationService(null);
     }
 

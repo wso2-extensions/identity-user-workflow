@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2026, WSO2 LLC. (http://www.wso2.com).
+ *
+ * WSO2 LLC. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.carbon.user.mgt.workflow.providers;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -19,12 +37,14 @@ import org.wso2.carbon.identity.rule.evaluation.api.provider.RuleEvaluationDataP
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
-import org.wso2.carbon.user.mgt.workflow.util.UserStoreWFConstants;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 
 /**
  * The unified Data Provider for Workflow Rule Evaluations across all workflow event types.
@@ -35,8 +55,13 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
 
     private static final String WSO2_CLAIM_URI_PREFIX = "http://wso2.org/claims/";
 
-    public static final String USERS_TO_BE_ADDED = "Users to be Added";
-    public static final String USERS_TO_BE_DELETED = "Users to be Deleted";
+    private static final String USER_STORE_DOMAIN = "User Store Domain";
+    private static final String USERS_TO_BE_ADDED = "Users to be Added";
+    private static final String USERS_TO_BE_DELETED = "Users to be Deleted";
+    private static final String USERNAME = "Username";
+    private static final String ROLE_ID = "Role ID";
+    private static final String ROLE_AUDIENCE_ID = "Role Audience ID";
+    private static final String EVENT_TYPE = "eventType";
 
     /**
      * Enum for supported non-claim rule fields in workflow operations.
@@ -48,7 +73,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
         INITIATOR_DOMAIN("initiator.domain"),
         INITIATOR_GROUPS("initiator.groups"),
         INITIATOR_ROLES("initiator.roles"),
-        ROLE("role"),
+        ROLE("role.id"),
         ROLE_AUDIENCE("role.audience"),
         ROLE_PERMISSIONS("role.permissions"),
         ROLE_HAS_ADDED_USERS("role.hasAddedUsers"),
@@ -105,7 +130,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
 
         if (log.isDebugEnabled()) {
             log.debug("Processing workflow rule evaluation for tenant: " + tenantDomain +
-                     " with event type: " + contextData.get("eventType"));
+                     " with event type: " + contextData.get(EVENT_TYPE));
         }
 
         // Iterate through the fields required by the Rule.
@@ -151,7 +176,6 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                         throw new RuleEvaluationDataProviderException("Unsupported field by WF rule evaluation data provider: " + fieldName);
                 }
             } catch (RuleEvaluationDataProviderException e) {
-                // Re-throw as is.
                 throw e;
             } catch (Exception e) {
                 throw new RuleEvaluationDataProviderException("Error processing field: " + fieldName, e);
@@ -165,7 +189,8 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
      * Add user domain field value from context data.
      */
     private void addUserDomainFieldValue(List<FieldValue> fieldValues, Field field, Map<String, Object> contextData) {
-        String userStoreDomain = (String) contextData.get("User Store Domain");
+
+        String userStoreDomain = (String) contextData.get(USER_STORE_DOMAIN);
         if (StringUtils.isNotBlank(userStoreDomain)) {
             fieldValues.add(new FieldValue(field.getName(), userStoreDomain, ValueType.STRING));
         }
@@ -175,7 +200,8 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
      * Add role ID field value from context data.
      */
     private void addRoleIdFieldValue(List<FieldValue> fieldValues, Field field, Map<String, Object> contextData) {
-        String roleId = (String) contextData.get("Role ID");
+        
+        String roleId = (String) contextData.get(ROLE_ID);
         if (StringUtils.isNotBlank(roleId)) {
             fieldValues.add(new FieldValue(field.getName(), roleId, ValueType.STRING));
         }
@@ -187,13 +213,13 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
     private void addUserRolesFieldValue(List<FieldValue> fieldValues, Field field, Map<String, Object> contextData,
                                        String tenantDomain) throws RuleEvaluationDataProviderException {
 
-        String username = (String) contextData.get("Username");
+        String username = (String) contextData.get(USERNAME);
         try {
             AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) CarbonContext
                     .getThreadLocalCarbonContext().getUserRealm().getUserStoreManager();
 
             String[] roleArray = userStoreManager.getRoleListOfUser(username);
-            if (roleArray != null && roleArray.length > 0) {
+            if (isNotEmpty(roleArray)) {
                 List<String> roleList = Arrays.asList(roleArray);
                 fieldValues.add(new FieldValue(field.getName(), roleList.toString(), ValueType.LIST));
             }
@@ -209,7 +235,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
     private void addUserGroupsFieldValue(List<FieldValue> fieldValues, Field field, Map<String, Object> contextData,
                                         String tenantDomain) throws RuleEvaluationDataProviderException {
 
-        String username = (String) contextData.get("Username");
+        String username = (String) contextData.get(USERNAME);
 
         try {
             AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) CarbonContext
@@ -223,14 +249,13 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                 }
                 return;
             }
-
+ 
             List<org.wso2.carbon.user.core.common.Group> groupList =
                     userStoreManager.getGroupListOfUser(userId, null, null);
             if (CollectionUtils.isNotEmpty(groupList)) {
-                List<String> groupNames = new ArrayList<>();
-                for (org.wso2.carbon.user.core.common.Group group : groupList) {
-                    groupNames.add(group.getGroupName());
-                }
+                List<String> groupNames = groupList.stream()
+                        .map(org.wso2.carbon.user.core.common.Group::getGroupName)
+                        .collect(Collectors.toList());
                 fieldValues.add(new FieldValue(field.getName(), groupNames.toString(), ValueType.LIST));
             }
         } catch (org.wso2.carbon.user.api.UserStoreException e) {
@@ -255,7 +280,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
         }
 
         // If not in context, fetch from user store using username.
-        String username = (String) contextData.get("Username");
+        String username = (String) contextData.get(USERNAME);
         if (StringUtils.isBlank(username)) {
             if (log.isDebugEnabled()) {
                 log.debug("Cannot fetch claim " + claimUri + " without Username in context.");
@@ -292,14 +317,14 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                                             String tenantDomain) throws RuleEvaluationDataProviderException {
 
         // First check if role audience ID is already available in context data.
-        String roleAudienceId = (String) contextData.get("Role Audience ID");
+        String roleAudienceId = (String) contextData.get(ROLE_AUDIENCE_ID);
         if (StringUtils.isNotBlank(roleAudienceId)) {
             fieldValues.add(new FieldValue(field.getName(), roleAudienceId, ValueType.REFERENCE));
             return;
         }
 
         // If not in context, fetch using Role ID from RoleManagementService.
-        String roleId = (String) contextData.get("Role ID");
+        String roleId = (String) contextData.get(ROLE_ID);
         if (StringUtils.isBlank(roleId)) {
             log.debug("Cannot fetch role audience ID without Role ID in context.");
             return;
@@ -364,6 +389,4 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                     (usersToBeDeleted != null ? usersToBeDeleted.size() : 0) + ")");
         }
     }
-
-
 }
