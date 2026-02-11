@@ -40,8 +40,11 @@ import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
@@ -54,7 +57,6 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
     private static final Log log = LogFactory.getLog(WorkFlowRuleEvaluationDataProvider.class);
 
     private static final String WSO2_CLAIM_URI_PREFIX = "http://wso2.org/claims/";
-
     private static final String USER_STORE_DOMAIN = "User Store Domain";
     private static final String USERS_TO_BE_ADDED = "Users to be Added";
     private static final String USERS_TO_BE_DELETED = "Users to be Deleted";
@@ -73,20 +75,21 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
         INITIATOR_DOMAIN("initiator.domain"),
         INITIATOR_GROUPS("initiator.groups"),
         INITIATOR_ROLES("initiator.roles"),
-        ROLE("role.id"),
+        ROLE_ID("role.id"),
         ROLE_AUDIENCE("role.audience"),
         ROLE_PERMISSIONS("role.permissions"),
         ROLE_HAS_ADDED_USERS("role.hasAddedUsers"),
         ROLE_HAS_DELETED_USERS("role.hasDeletedUsers");
 
-
         private final String fieldName;
 
         RuleField(String fieldName) {
+
             this.fieldName = fieldName;
         }
 
         public String getFieldName() {
+
             return fieldName;
         }
 
@@ -97,6 +100,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
          * @return RuleField if found, null otherwise.
          */
         public static RuleField valueOfFieldName(String fieldName) {
+
             for (RuleField ruleField : RuleField.values()) {
                 if (ruleField.getFieldName().equals(fieldName)) {
                     return ruleField;
@@ -113,11 +117,13 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
      * @return True if the field name is a claim URI.
      */
     private boolean isClaimUri(String fieldName) {
+
         return fieldName != null && fieldName.startsWith(WSO2_CLAIM_URI_PREFIX);
     }
 
     @Override
     public FlowType getSupportedFlowType() {
+        
         return FlowType.APPROVAL_WORKFLOW;
     }
 
@@ -133,18 +139,35 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                      " with event type: " + contextData.get(EVENT_TYPE));
         }
 
-        // Iterate through the fields required by the Rule.
-        for (Field field : ruleEvaluationContext.getFields()) {
+        Map<Boolean, List<Field>> partitionedFields = ruleEvaluationContext.getFields().stream()
+                .collect(Collectors.partitioningBy(field -> isClaimUri(field.getName())));
+
+        List<Field> claimFields = partitionedFields.get(true);
+        List<Field> nonClaimFields = partitionedFields.get(false);
+        if (!claimFields.isEmpty()) {
+            addUserClaimFieldValues(fieldValues, claimFields, contextData, tenantDomain);
+        }
+
+        // Iterate through the non-claim fields required by the rule.
+        for (Field field : nonClaimFields) {
             String fieldName = field.getName();
 
-            try {
-                // check if the field is a claim URI.
-                if (isClaimUri(fieldName)) {
-                    addUserClaimFieldValue(fieldValues, field, contextData, fieldName, tenantDomain);
-                    continue;
+            // Reuse the cached values.
+            FieldValue cachedValue = findCachedFieldValue(fieldValues, fieldName);
+            if (cachedValue != null) {
+                // Check the value type to create the appropriate FieldValue.
+                if (cachedValue.getValueType() == ValueType.LIST) {
+                    fieldValues.add(new FieldValue(field.getName(), (List<String>) cachedValue.getValue()));
+                } else if (cachedValue.getValueType() == ValueType.REFERENCE) {
+                    fieldValues.add(new FieldValue(field.getName(), (String) cachedValue.getValue(), ValueType.REFERENCE));
+                } else {
+                    // ValueType.STRING
+                    fieldValues.add(new FieldValue(field.getName(), (String) cachedValue.getValue(), ValueType.STRING));
                 }
+                continue;
+            }
 
-                // Handle non-claim fields.
+            try {    
                 RuleField ruleField = RuleField.valueOfFieldName(fieldName);
                 if (ruleField == null) {
                     throw new RuleEvaluationDataProviderException("Unsupported field: " + fieldName);
@@ -163,7 +186,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                     case ROLE_AUDIENCE:
                         addRoleAudienceIdFieldValue(fieldValues, field, contextData, tenantDomain);
                         break;
-                    case ROLE:
+                    case ROLE_ID:
                         addRoleIdFieldValue(fieldValues, field, contextData);
                         break;
                     case ROLE_HAS_ADDED_USERS:
@@ -183,6 +206,23 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
         }
 
         return fieldValues;
+    }
+
+    /**
+     * Find cached field value from already resolved field values.
+     *
+     * @param fieldValues List of already resolved field values.
+     * @param fieldName Field name to search for.
+     * @return Cached FieldValue if found, null otherwise.
+     */
+    private FieldValue findCachedFieldValue(List<FieldValue> fieldValues, String fieldName) {
+
+        for (FieldValue fieldValue : fieldValues) {
+            if (fieldValue.getName().equals(fieldName)) {
+                return fieldValue;
+            }
+        }
+        return null;
     }
 
     /**
@@ -221,7 +261,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
             String[] roleArray = userStoreManager.getRoleListOfUser(username);
             if (isNotEmpty(roleArray)) {
                 List<String> roleList = Arrays.asList(roleArray);
-                fieldValues.add(new FieldValue(field.getName(), roleList.toString(), ValueType.LIST));
+                fieldValues.add(new FieldValue(field.getName(), roleList));
             }
         } catch (org.wso2.carbon.user.api.UserStoreException e) {
             throw new RuleEvaluationDataProviderException(
@@ -256,7 +296,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                 List<String> groupNames = groupList.stream()
                         .map(org.wso2.carbon.user.core.common.Group::getGroupName)
                         .collect(Collectors.toList());
-                fieldValues.add(new FieldValue(field.getName(), groupNames.toString(), ValueType.LIST));
+               fieldValues.add(new FieldValue(field.getName(), groupNames));
             }
         } catch (org.wso2.carbon.user.api.UserStoreException e) {
             throw new RuleEvaluationDataProviderException(
@@ -265,51 +305,76 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
     }
 
     /**
-     * Add user claim field value by fetching from user store.
-     * First checks if the claim value is available in context data, otherwise fetches from user store.
+     * Batch process user claim fields by fetching from user store.
+     * First checks if claim values are available in context data, then fetches remaining claims in a single call.
+     *
+     * @param fieldValues List of field values to add to.
+     * @param claimFields List of claim URI fields to process.
+     * @param contextData Context data from the flow context.
+     * @param tenantDomain Tenant domain.
+     * @throws RuleEvaluationDataProviderException If error occurs while fetching claims.
      */
-    private void addUserClaimFieldValue(List<FieldValue> fieldValues, Field field, Map<String, Object> contextData,
-                                       String claimUri, String tenantDomain)
-                                       throws RuleEvaluationDataProviderException {
+    private void addUserClaimFieldValues(List<FieldValue> fieldValues, List<Field> claimFields,
+                                    Map<String, Object> contextData, String tenantDomain)
+                                    throws RuleEvaluationDataProviderException {
 
-        // First try to get the claim value directly from context data.
+    Map<String, String> claimValueCache = new LinkedHashMap<>();
+    Set<String> claimsToFetch = new LinkedHashSet<>();
+
+    // check context data and collect claims to fetch.
+    for (Field field : claimFields) {
+        String claimUri = field.getName();
+        
+        if (claimValueCache.containsKey(claimUri)) {
+            continue;
+        }
+        
+        // Check if claim value is already in context data.
         String claimValue = (String) contextData.get(claimUri);
         if (StringUtils.isNotBlank(claimValue)) {
-            fieldValues.add(new FieldValue(field.getName(), claimValue, ValueType.STRING));
-            return;
-        }
-
-        // If not in context, fetch from user store using username.
-        String username = (String) contextData.get(USERNAME);
-        if (StringUtils.isBlank(username)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Cannot fetch claim " + claimUri + " without Username in context.");
-            }
-            return;
-        }
-
-        try {
-            AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) CarbonContext
-                    .getThreadLocalCarbonContext().getUserRealm().getUserStoreManager();
-
-            Map<String, String> claims = userStoreManager.getUserClaimValues(
-                    username,
-                    new String[]{claimUri},
-                    UserCoreConstants.DEFAULT_PROFILE
-            );
-
-            if (claims != null && claims.containsKey(claimUri)) {
-                claimValue = claims.get(claimUri);
-                if (StringUtils.isNotBlank(claimValue)) {
-                    fieldValues.add(new FieldValue(field.getName(), claimValue, ValueType.STRING));
-                }
-            }
-        } catch (org.wso2.carbon.user.api.UserStoreException e) {
-            throw new RuleEvaluationDataProviderException(
-                    "Error retrieving user claim " + claimUri + " for username: " + username, e);
+            claimValueCache.put(claimUri, claimValue);
+        } else {
+            claimsToFetch.add(claimUri);
         }
     }
 
+    // Batch fetch remaining claims if needed.
+    if (!claimsToFetch.isEmpty()) {
+        String username = (String) contextData.get(USERNAME);
+        if (StringUtils.isBlank(username)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Cannot fetch claims without Username in context. Claims: " + claimsToFetch);
+            }
+        } else {
+            try {
+                AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) CarbonContext
+                        .getThreadLocalCarbonContext().getUserRealm().getUserStoreManager();
+
+                Map<String, String> claims = userStoreManager.getUserClaimValues(
+                        username,
+                        claimsToFetch.toArray(new String[0]),
+                        UserCoreConstants.DEFAULT_PROFILE
+                );
+
+                if (claims != null) {
+                    claimValueCache.putAll(claims);
+                }
+            } catch (org.wso2.carbon.user.api.UserStoreException e) {
+                throw new RuleEvaluationDataProviderException(
+                        "Error retrieving user claims for username: " + username, e);
+            }
+        }
+    }
+
+    for (Field field : claimFields) {
+        String claimUri = field.getName();
+        String claimValue = claimValueCache.get(claimUri);
+        
+        if (StringUtils.isNotBlank(claimValue)) {
+            fieldValues.add(new FieldValue(field.getName(), claimValue, ValueType.STRING));
+        }
+    }
+}
     /**
      * Add role audience ID field value by fetching from role management service.
      */
