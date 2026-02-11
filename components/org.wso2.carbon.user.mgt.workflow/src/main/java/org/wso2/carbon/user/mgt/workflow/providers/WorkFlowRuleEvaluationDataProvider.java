@@ -318,63 +318,60 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                                     Map<String, Object> contextData, String tenantDomain)
                                     throws RuleEvaluationDataProviderException {
 
-    Map<String, String> claimValueCache = new LinkedHashMap<>();
-    Set<String> claimsToFetch = new LinkedHashSet<>();
+        Map<String, String> claimValueCache = new LinkedHashMap<>();
+        Set<String> claimsToFetch = new LinkedHashSet<>();
 
-    // check context data and collect claims to fetch.
-    for (Field field : claimFields) {
-        String claimUri = field.getName();
-        
-        if (claimValueCache.containsKey(claimUri)) {
-            continue;
-        }
-        
-        // Check if claim value is already in context data.
-        String claimValue = (String) contextData.get(claimUri);
-        if (StringUtils.isNotBlank(claimValue)) {
-            claimValueCache.put(claimUri, claimValue);
-        } else {
-            claimsToFetch.add(claimUri);
-        }
-    }
-
-    // Batch fetch remaining claims if needed.
-    if (!claimsToFetch.isEmpty()) {
-        String username = (String) contextData.get(USERNAME);
-        if (StringUtils.isBlank(username)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Cannot fetch claims without Username in context. Claims: " + claimsToFetch);
+        // check context data and collect claims to fetch.
+        for (Field field : claimFields) {
+            String claimUri = field.getName();
+            
+            if (claimValueCache.containsKey(claimUri)) {
+                continue;
             }
-        } else {
-            try {
-                AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) CarbonContext
-                        .getThreadLocalCarbonContext().getUserRealm().getUserStoreManager();
-
-                Map<String, String> claims = userStoreManager.getUserClaimValues(
-                        username,
-                        claimsToFetch.toArray(new String[0]),
-                        UserCoreConstants.DEFAULT_PROFILE
-                );
-
-                if (claims != null) {
-                    claimValueCache.putAll(claims);
+            // Check if claim value is already in context data.
+            String claimValue = (String) contextData.get(claimUri);
+            if (StringUtils.isNotBlank(claimValue)) {
+                claimValueCache.put(claimUri, claimValue);
+            } else {
+                claimsToFetch.add(claimUri);
+            }
+        }
+        // Batch fetch remaining claims if needed.
+        if (!claimsToFetch.isEmpty()) {
+            String username = (String) contextData.get(USERNAME);
+            if (StringUtils.isBlank(username)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Cannot fetch claims without Username in context. Claims: " + claimsToFetch);
                 }
-            } catch (org.wso2.carbon.user.api.UserStoreException e) {
-                throw new RuleEvaluationDataProviderException(
-                        "Error retrieving user claims for username: " + username, e);
+            } else {
+                try {
+                    AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) CarbonContext
+                            .getThreadLocalCarbonContext().getUserRealm().getUserStoreManager();
+
+                    Map<String, String> claims = userStoreManager.getUserClaimValues(
+                            username,
+                            claimsToFetch.toArray(new String[0]),
+                            UserCoreConstants.DEFAULT_PROFILE
+                    );
+                    if (claims != null) {
+                        claimValueCache.putAll(claims);
+                    }
+                } catch (org.wso2.carbon.user.api.UserStoreException e) {
+                    throw new RuleEvaluationDataProviderException(
+                            "Error retrieving user claims for username: " + username, e);
+                }
+            }
+        }
+
+        for (Field field : claimFields) {
+            String claimUri = field.getName();
+            String claimValue = claimValueCache.get(claimUri);
+            
+            if (StringUtils.isNotBlank(claimValue)) {
+                fieldValues.add(new FieldValue(field.getName(), claimValue, ValueType.STRING));
             }
         }
     }
-
-    for (Field field : claimFields) {
-        String claimUri = field.getName();
-        String claimValue = claimValueCache.get(claimUri);
-        
-        if (StringUtils.isNotBlank(claimValue)) {
-            fieldValues.add(new FieldValue(field.getName(), claimValue, ValueType.STRING));
-        }
-    }
-}
     /**
      * Add role audience ID field value by fetching from role management service.
      */
