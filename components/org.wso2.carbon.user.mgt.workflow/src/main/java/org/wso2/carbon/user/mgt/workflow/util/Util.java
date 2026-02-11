@@ -36,7 +36,7 @@ public class Util {
         try {
             return workflowService.isEventAssociated(eventType);
         } catch (WorkflowException e) {
-            LOG.error("Error while checking if add user event is associated with a workflow.", e);
+            LOG.error("Error while checking if event '" + eventType + "'  is associated with a workflow.", e);
             return false;
         }
     }
