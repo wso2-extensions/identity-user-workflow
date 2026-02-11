@@ -43,9 +43,12 @@ import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 import org.wso2.carbon.user.mgt.workflow.util.ValidationResult;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.wso2.carbon.user.core.constants.UserCoreErrorConstants.ErrorMessages.ERROR_CODE_INVALID_PASSWORD;
 import static org.wso2.carbon.user.core.constants.UserCoreErrorConstants.ErrorMessages.ERROR_CODE_INVALID_USER_NAME;
@@ -60,7 +63,18 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     public static final String DO_POST_ADD_USER_IDENTITY_PROPERTY = "doPostAddUser";
     public static final String DO_PRE_SET_USER_CLAIM_VALUES_IDENTITY_PROPERT = "doPreSetUserClaimValues";
     public static final String DO_POST_UPDATE_CREDENTIAL_IDENTITY_PROPERTY = "doPostUpdateCredential";
+    private static final String AUTHENTICATION_FROM_FRAMEWORK = "authenticationFrameworkFlow";
+    private static final String SELF_SIGNUP_ROLE = "Internal/selfsignup";
     private static final Log log = LogFactory.getLog(UserStoreActionListener.class);
+
+    private static final Set<String> RESTRICTED_NON_IDENTITY_CLAIMS = Collections.unmodifiableSet(new HashSet<>(
+            Arrays.asList("http://wso2.org/claims/active", "http://wso2.org/claims/location",
+                    "http://wso2.org/claims/metadata.version", "http://wso2.org/claims/modified",
+                    "http://wso2.org/claims/oneTimePassword", "http://wso2.org/claims/resourceType",
+                    "http://wso2.org/claims/userid", "http://wso2.org/claims/username",
+                    "http://wso2.org/claims/userprincipal", "http://wso2.org/claims/userType",
+                    "http://wso2.org/claims/verifiedEmailAddresses", "http://wso2.org/claims/verifiedMobileNumbers",
+                    "urn:ietf:params:scim:schemas:core:2.0:meta.lastModified")));
 
     @Override
     public int getExecutionOrderId() {
@@ -76,7 +90,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     public boolean doPreAddUser(String userName, Object credential, String[] roleList, Map<String, String> claims,
                                 String profile, UserStoreManager userStoreManager) throws UserStoreException {
 
-        if (!isEnable() || isCalledViaIdentityMgtListners()) {
+        if (!isEnable() || isCalledViaIdentityMgtListners() || isJITProvisioningFlow()) {
             return true;
         }
 
@@ -166,10 +180,15 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId, true);
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setUsername(currentUser);
 
-            return deleteUserWFRequestHandler.startDeleteUserFlow(domain, userName);
+            boolean state = deleteUserWFRequestHandler.startDeleteUserFlow(domain, userName);
+            if (!state) {
+                throw new UserStoreException("User deletion request is sent to the workflow engine for approval.",
+                        UserCoreConstants.ErrorCode.USER_DELETION_WORKFLOW_CREATED);
+            }
+            return true;
         } catch (WorkflowException e) {
-            // Sending e.getMessage() since it is required to give error message to end user.
-            throw new UserStoreException(e.getMessage(), e);
+            // Sending the error message and the code to identify the validation failures.
+            throw new UserStoreException(e.getMessage(), e.getErrorCode(), e);
         } finally {
             PrivilegedCarbonContext.endTenantFlow();
         }
@@ -178,7 +197,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     @Override
     public boolean doPreSetUserClaimValue(String userName, String claimURI, String claimValue, String profileName,
                                           UserStoreManager userStoreManager) throws UserStoreException {
-        if (!isEnable() || isCalledViaIdentityMgtListners()) {
+        if (!isEnable() || isCalledViaIdentityMgtListners() || isRestrictedForClaimUpdateWorkflow(claimURI)) {
             return true;
         }
 
@@ -196,12 +215,16 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId, true);
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setUsername(currentUser);
 
-            return setMultipleClaimsWFRequestHandler.startSetMultipleClaimsWorkflow(domain, userName, claims,
-                                                                                    profileName);
-
+            boolean state = setMultipleClaimsWFRequestHandler.startSetMultipleClaimsWorkflow(domain, userName, claims,
+                    profileName);
+            if (!state) {
+                throw new UserStoreException("User claim update request is sent to the workflow engine for approval.",
+                        UserCoreConstants.ErrorCode.USER_CLAIMS_UPDATE_WORKFLOW_CREATED);
+            }
+            return true;
         } catch (WorkflowException e) {
-            // Sending e.getMessage() since it is required to give error message to end user.
-            throw new UserStoreException(e.getMessage(), e);
+            // Sending the error message and the code to identify the validation failures.
+            throw new UserStoreException(e.getMessage(), e.getErrorCode(), e);
         } finally {
             PrivilegedCarbonContext.endTenantFlow();
         }
@@ -211,7 +234,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     public boolean doPreSetUserClaimValues(String userName, Map<String, String> claims, String profileName,
                                            UserStoreManager userStoreManager) throws UserStoreException {
 
-        if (!isEnable() || isCalledViaIdentityMgtListners()) {
+        if (!isEnable() || isCalledViaIdentityMgtListners() || isRestrictedForClaimUpdateWorkflow(claims.keySet())) {
             return true;
         }
         try {
@@ -224,10 +247,16 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId, true);
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setUsername(currentUser);
 
-            return setMultipleClaimsWFRequestHandler.startSetMultipleClaimsWorkflow(domain, userName, claims, profileName);
+            boolean state = setMultipleClaimsWFRequestHandler.startSetMultipleClaimsWorkflow(domain, userName, claims,
+                    profileName);
+            if (!state) {
+                throw new UserStoreException("User claims update request is sent to the workflow engine for approval.",
+                        UserCoreConstants.ErrorCode.USER_CLAIMS_UPDATE_WORKFLOW_CREATED);
+            }
+            return true;
         } catch (WorkflowException e) {
-            // Sending e.getMessage() since it is required to give error message to end user.
-            throw new UserStoreException(e.getMessage(), e);
+            // Sending the error message and the code to identify the validation failures.
+            throw new UserStoreException(e.getMessage(), e.getErrorCode(), e);
         } finally {
             PrivilegedCarbonContext.endTenantFlow();
         }
@@ -237,7 +266,8 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     public boolean doPreDeleteUserClaimValues(String userName, String[] claims, String profileName, UserStoreManager
             userStoreManager) throws UserStoreException {
 
-        if (!isEnable() || isCalledViaIdentityMgtListners()) {
+        if (!isEnable() || isCalledViaIdentityMgtListners() ||
+                isRestrictedForClaimUpdateWorkflow(new HashSet<>(Arrays.asList(claims)))) {
             return true;
         }
         try {
@@ -250,11 +280,16 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId, true);
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setUsername(currentUser);
 
-            return deleteMultipleClaimsWFRequestHandler.startDeleteMultipleClaimsWorkflow(domain, userName, claims,
-                    profileName);
+            boolean state = deleteMultipleClaimsWFRequestHandler.startDeleteMultipleClaimsWorkflow(domain, userName,
+                    claims, profileName);
+            if (!state) {
+                throw new UserStoreException("User claims delete request is sent to the workflow engine for approval.",
+                        UserCoreConstants.ErrorCode.USER_CLAIMS_UPDATE_WORKFLOW_CREATED);
+            }
+            return true;
         } catch (WorkflowException e) {
-            // Sending e.getMessage() since it is required to give error message to end user.
-            throw new UserStoreException(e.getMessage(), e);
+            // Sending the error message and the code to identify the validation failures.
+            throw new UserStoreException(e.getMessage(), e.getErrorCode(), e);
         } finally {
             PrivilegedCarbonContext.endTenantFlow();
         }
@@ -263,7 +298,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     @Override
     public boolean doPreDeleteUserClaimValue(String userName, String claimURI, String profileName,
                                              UserStoreManager userStoreManager) throws UserStoreException {
-        if (!isEnable() || isCalledViaIdentityMgtListners()) {
+        if (!isEnable() || isCalledViaIdentityMgtListners() || isRestrictedForClaimUpdateWorkflow(claimURI)) {
             return true;
         }
 
@@ -281,11 +316,16 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId, true);
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setUsername(currentUser);
 
-            return deleteMultipleClaimsWFRequestHandler.startDeleteMultipleClaimsWorkflow(domain, userName, claims,
-                                                                                          profileName);
+            boolean state = deleteMultipleClaimsWFRequestHandler.startDeleteMultipleClaimsWorkflow(domain, userName,
+                    claims, profileName);
+            if (!state) {
+                throw new UserStoreException("User claim delete request is sent to the workflow engine for approval.",
+                        UserCoreConstants.ErrorCode.USER_CLAIMS_UPDATE_WORKFLOW_CREATED);
+            }
+            return true;
         } catch (WorkflowException e) {
-            // Sending e.getMessage() since it is required to give error message to end user.
-            throw new UserStoreException(e.getMessage(), e);
+            // Sending the error message and the code to identify the validation failures.
+            throw new UserStoreException(e.getMessage(), e.getErrorCode(), e);
         } finally {
             PrivilegedCarbonContext.endTenantFlow();
         }
@@ -295,7 +335,7 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     public boolean doPreAddRole(String roleName, String[] userList, Permission[] permissions, UserStoreManager
             userStoreManager) throws UserStoreException {
 
-        if (!isEnable() || isCalledViaIdentityMgtListners()) {
+        if (!isEnable() || isCalledViaIdentityMgtListners() || isSelfSignupRole(roleName)) {
             return true;
         }
 
@@ -482,6 +522,14 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
                 || IdentityUtil.threadLocalProperties.get().containsKey (DO_POST_UPDATE_CREDENTIAL_IDENTITY_PROPERTY);
     }
 
+    /* If the user onboarding is done via the authentication framework(JIT), we do not want to engage with the
+   workflow engine. JIT provisioning is a process where a user is onboarded automatically during authentication,
+   rather than through a manual or separate registration process.*/
+    private boolean isJITProvisioningFlow() {
+
+        return IdentityUtil.threadLocalProperties.get().containsKey(AUTHENTICATION_FROM_FRAMEWORK);
+    }
+
     private void doPasswordPolicyValidation(String userName, Object credential, UserStoreManager userStoreManager,
                                             AddUserWFRequestHandler addUserWFRequestHandler)
             throws UserStoreException {
@@ -545,5 +593,44 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
             }
             throw new UserStoreException("Error when handling event : " + eventName, e);
         }
+    }
+
+    private boolean isSelfSignupRole(String roleName) {
+
+        return SELF_SIGNUP_ROLE.equals(roleName);
+    }
+
+    /**
+     * This method is used to check whether the claim update workflow should be triggered for the given set of claims.
+     * If all of the claims in the set are restricted for claim update workflow, this method will return true.
+     *
+     * @param claims Set of claim URIs to be checked for claim update workflow restriction.
+     * @return true if all of the claims in the set are restricted for claim update workflow, false otherwise.
+     */
+    private boolean isRestrictedForClaimUpdateWorkflow(Set<String> claims) {
+
+        if (claims == null || claims.isEmpty()) {
+            return true;
+        }
+
+        for (String claimURI : claims) {
+            if (!isRestrictedForClaimUpdateWorkflow(claimURI)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isRestrictedForClaimUpdateWorkflow(String claimURI) {
+
+        if (claimURI == null) {
+            return true;
+        }
+
+        if (claimURI.contains("/identity/")) {
+            return true;
+        }
+
+        return RESTRICTED_NON_IDENTITY_CLAIMS.contains(claimURI);
     }
 }

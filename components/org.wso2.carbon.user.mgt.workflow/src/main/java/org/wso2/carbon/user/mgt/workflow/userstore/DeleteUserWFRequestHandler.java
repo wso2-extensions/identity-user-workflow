@@ -43,6 +43,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.wso2.carbon.user.mgt.workflow.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_ALREADY_EXISTS;
+import static org.wso2.carbon.user.mgt.workflow.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_USER_NOT_FOUND;
+
 public class DeleteUserWFRequestHandler extends AbstractWorkflowRequestHandler {
 
     private static final String FRIENDLY_NAME = "Delete User";
@@ -184,10 +187,11 @@ public class DeleteUserWFRequestHandler extends AbstractWorkflowRequestHandler {
             try {
                 if (UserStoreWFConstants.ENTITY_TYPE_USER.equals(entities[i].getEntityType()) && workflowService
                         .entityHasPendingWorkflows(entities[i])) {
-                    throw new WorkflowException("User has pending workflows which blocks this operation.");
+                    throw new WorkflowException("User has pending workflows which blocks this operation.",
+                            ERROR_CODE_USER_WF_ALREADY_EXISTS.getCode());
                 } else if (UserStoreWFConstants.ENTITY_TYPE_USER.equals(entities[i].getEntityType()) &&
                         !userStoreManager.isExistingUser(entities[i].getEntityId())) {
-                    throw new WorkflowException("User does not exist.");
+                    throw new WorkflowException("User does not exist.", ERROR_CODE_USER_WF_USER_NOT_FOUND.getCode());
                 }
             } catch (InternalWorkflowException | org.wso2.carbon.user.core.UserStoreException e) {
                 throw new WorkflowException(e.getMessage(), e);

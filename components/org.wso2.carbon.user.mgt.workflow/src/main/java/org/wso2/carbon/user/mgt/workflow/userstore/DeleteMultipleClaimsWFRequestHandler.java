@@ -45,6 +45,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.wso2.carbon.user.mgt.workflow.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_ALREADY_EXISTS;
+import static org.wso2.carbon.user.mgt.workflow.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_USER_ACCOUNT_PENDING_DELETION;
+import static org.wso2.carbon.user.mgt.workflow.util.WorkflowErrorConstants.ErrorMessages.ERROR_CODE_USER_WF_USER_NOT_FOUND;
+
 public class DeleteMultipleClaimsWFRequestHandler extends AbstractWorkflowRequestHandler {
 
     private static final String FRIENDLY_NAME = "Delete User Claims";
@@ -204,17 +208,19 @@ public class DeleteMultipleClaimsWFRequestHandler extends AbstractWorkflowReques
             try {
                 if (UserStoreWFConstants.ENTITY_TYPE_USER.equals(entities[i].getEntityType()) && workflowService
                         .entityHasPendingWorkflowsOfType(entities[i], UserStoreWFConstants.DELETE_USER_EVENT)) {
-                    throw new WorkflowException("User has a delete operation pending.");
+                    throw new WorkflowException("User has a delete operation pending.",
+                            ERROR_CODE_USER_WF_USER_ACCOUNT_PENDING_DELETION.getCode());
                 } else if (UserStoreWFConstants.ENTITY_TYPE_USER.equals(entities[i].getEntityType()) &&
                         !userStoreManager.isExistingUser(entities[i].getEntityId())) {
-                    throw new WorkflowException("User " + entities[i].getEntityId() + " does not exist.");
+                    throw new WorkflowException("User " + entities[i].getEntityId() + " does not exist.",
+                            ERROR_CODE_USER_WF_USER_NOT_FOUND.getCode());
                 }
                 if (UserStoreWFConstants.ENTITY_TYPE_USER.equals(entities[i].getEntityType())) {
                     for (int j = 0; j < entities.length; j++) {
                         if (UserStoreWFConstants.ENTITY_TYPE_CLAIM.equals(entities[j].getEntityType()) &&
                                 workflowService.areTwoEntitiesRelated(entities[i], entities[j])) {
                             throw new WorkflowException(entities[j].getEntityId() + " of user is already in a " +
-                                    "workflow to delete or update.");
+                                    "workflow to delete or update.", ERROR_CODE_USER_WF_ALREADY_EXISTS.getCode());
                         }
                     }
                 }
