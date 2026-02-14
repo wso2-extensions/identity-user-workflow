@@ -58,8 +58,8 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
 
     private static final String WSO2_CLAIM_URI_PREFIX = "http://wso2.org/claims/";
     private static final String USER_STORE_DOMAIN = "User Store Domain";
-    private static final String USERS_TO_BE_ASSIGNED = "Users to be Assigned";
-    private static final String USERS_TO_BE_UNASSIGNED = "Users to be Unassigned";
+    private static final String USERS_TO_BE_ASSIGNED = "Users to be Added";
+    private static final String USERS_TO_BE_UNASSIGNED = "Users to be Deleted";
     private static final String USERNAME = "Username";
     private static final String ROLE_ID = "Role ID";
     private static final String ROLE_AUDIENCE_ID = "Role Audience ID";
