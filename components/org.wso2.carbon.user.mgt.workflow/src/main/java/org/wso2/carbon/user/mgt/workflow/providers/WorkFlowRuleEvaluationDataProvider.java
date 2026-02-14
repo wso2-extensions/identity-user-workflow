@@ -58,8 +58,8 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
 
     private static final String WSO2_CLAIM_URI_PREFIX = "http://wso2.org/claims/";
     private static final String USER_STORE_DOMAIN = "User Store Domain";
-    private static final String USERS_TO_BE_ADDED = "Users to be Added";
-    private static final String USERS_TO_BE_DELETED = "Users to be Deleted";
+    private static final String USERS_TO_BE_ASSIGNED = "Users to be Assigned";
+    private static final String USERS_TO_BE_UNASSIGNED = "Users to be Unassigned";
     private static final String USERNAME = "Username";
     private static final String ROLE_ID = "Role ID";
     private static final String ROLE_AUDIENCE_ID = "Role Audience ID";
@@ -78,8 +78,8 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
         ROLE_ID("role.id"),
         ROLE_AUDIENCE("role.audience"),
         ROLE_PERMISSIONS("role.permissions"),
-        ROLE_HAS_ADDED_USERS("role.hasAddedUsers"),
-        ROLE_HAS_DELETED_USERS("role.hasDeletedUsers");
+        ROLE_HAS_ASSIGNED_USERS("role.hasAssignedUsers"),
+        ROLE_HAS_UNASSIGNED_USERS("role.hasUnassignedUsers");
 
         private final String fieldName;
 
@@ -152,17 +152,17 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
         for (Field field : nonClaimFields) {
             String fieldName = field.getName();
 
-            // Reuse the cached values.
-            FieldValue cachedValue = findCachedFieldValue(fieldValues, fieldName);
-            if (cachedValue != null) {
+            // Reuse already resolved field values.
+            FieldValue existingFieldValue = findResolvedFieldValue(fieldValues, fieldName);
+            if (existingFieldValue != null) {
                 // Check the value type to create the appropriate FieldValue.
-                if (cachedValue.getValueType() == ValueType.LIST) {
-                    fieldValues.add(new FieldValue(field.getName(), (List<String>) cachedValue.getValue()));
-                } else if (cachedValue.getValueType() == ValueType.REFERENCE) {
-                    fieldValues.add(new FieldValue(field.getName(), (String) cachedValue.getValue(), ValueType.REFERENCE));
+                if (existingFieldValue.getValueType() == ValueType.LIST) {
+                    fieldValues.add(new FieldValue(field.getName(), (List<String>) existingFieldValue.getValue()));
+                } else if (existingFieldValue.getValueType() == ValueType.REFERENCE) {
+                    fieldValues.add(new FieldValue(field.getName(), (String) existingFieldValue.getValue(), ValueType.REFERENCE));
                 } else {
                     // ValueType.STRING
-                    fieldValues.add(new FieldValue(field.getName(), (String) cachedValue.getValue(), ValueType.STRING));
+                    fieldValues.add(new FieldValue(field.getName(), (String) existingFieldValue.getValue(), ValueType.STRING));
                 }
                 continue;
             }
@@ -189,11 +189,11 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                     case ROLE_ID:
                         addRoleIdFieldValue(fieldValues, field, contextData);
                         break;
-                    case ROLE_HAS_ADDED_USERS:
-                        addRoleHasAddedUsersFieldValue(fieldValues, field, contextData);
+                    case ROLE_HAS_ASSIGNED_USERS:
+                        addRoleHasAssignedUsersFieldValue(fieldValues, field, contextData);
                         break;
-                    case ROLE_HAS_DELETED_USERS:
-                        addRoleHasDeletedUsersFieldValue(fieldValues, field, contextData);
+                    case ROLE_HAS_UNASSIGNED_USERS:
+                        addRoleHasUnassignedUsersFieldValue(fieldValues, field, contextData);
                         break;
                     default:
                         throw new RuleEvaluationDataProviderException("Unsupported field by WF rule evaluation data provider: " + fieldName);
@@ -209,13 +209,13 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
     }
 
     /**
-     * Find cached field value from already resolved field values.
+     * Find a resolved field value from the list of already processed field values.
      *
      * @param fieldValues List of already resolved field values.
      * @param fieldName Field name to search for.
-     * @return Cached FieldValue if found, null otherwise.
+     * @return Resolved FieldValue if found, null otherwise.
      */
-    private FieldValue findCachedFieldValue(List<FieldValue> fieldValues, String fieldName) {
+    private FieldValue findResolvedFieldValue(List<FieldValue> fieldValues, String fieldName) {
 
         for (FieldValue fieldValue : fieldValues) {
             if (fieldValue.getName().equals(fieldName)) {
@@ -318,20 +318,20 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                                     Map<String, Object> contextData, String tenantDomain)
                                     throws RuleEvaluationDataProviderException {
 
-        Map<String, String> claimValueCache = new LinkedHashMap<>();
+        Map<String, String> claimValueMap = new LinkedHashMap<>();
         Set<String> claimsToFetch = new LinkedHashSet<>();
 
         // check context data and collect claims to fetch.
         for (Field field : claimFields) {
             String claimUri = field.getName();
             
-            if (claimValueCache.containsKey(claimUri)) {
+            if (claimValueMap.containsKey(claimUri)) {
                 continue;
             }
             // Check if claim value is already in context data.
             String claimValue = (String) contextData.get(claimUri);
             if (StringUtils.isNotBlank(claimValue)) {
-                claimValueCache.put(claimUri, claimValue);
+                claimValueMap.put(claimUri, claimValue);
             } else {
                 claimsToFetch.add(claimUri);
             }
@@ -354,7 +354,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                             UserCoreConstants.DEFAULT_PROFILE
                     );
                     if (claims != null) {
-                        claimValueCache.putAll(claims);
+                        claimValueMap.putAll(claims);
                     }
                 } catch (org.wso2.carbon.user.api.UserStoreException e) {
                     throw new RuleEvaluationDataProviderException(
@@ -365,7 +365,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
 
         for (Field field : claimFields) {
             String claimUri = field.getName();
-            String claimValue = claimValueCache.get(claimUri);
+            String claimValue = claimValueMap.get(claimUri);
             
             if (StringUtils.isNotBlank(claimValue)) {
                 fieldValues.add(new FieldValue(field.getName(), claimValue, ValueType.STRING));
@@ -397,58 +397,54 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
             // Fetch Role Related Details using RoleManagementService.
             RoleManagementService roleManagementService = IdentityWorkflowDataHolder.getInstance()
                     .getRoleManagementService();
-
-            if (roleManagementService != null) {
-                roleBasicInfo = roleManagementService.getRoleBasicInfoById(roleId, tenantDomain);
-            }
+            roleBasicInfo = roleManagementService.getRoleBasicInfoById(roleId, tenantDomain);
         } catch (IdentityRoleManagementException e) {
             throw new RuleEvaluationDataProviderException("Error retrieving role info for roleId: " + roleId, e);
         }
-
         if (roleBasicInfo != null && StringUtils.isNotBlank(roleBasicInfo.getAudienceId())) {
             fieldValues.add(new FieldValue(field.getName(), roleBasicInfo.getAudienceId(), ValueType.REFERENCE));
         }
     }
 
      /**
-     * Add role has added users field value from context data.
-     * Checks if the "Users to be Added" list in context data is non-empty.
+     * Add role has assigned users field value from context data.
+     * Checks if the "Users to be Assigned" list in context data is non-empty.
      *
      * @param fieldValues List of field values to add to.
      * @param field       Field being processed.
      * @param contextData Context data from the flow context.
      */
-    private void addRoleHasAddedUsersFieldValue(List<FieldValue> fieldValues, Field field,
-                                                Map<String, Object> contextData) {
+    private void addRoleHasAssignedUsersFieldValue(List<FieldValue> fieldValues, Field field,
+                                                   Map<String, Object> contextData) {
 
-        List<?> usersToBeAdded = (List<?>) contextData.get(USERS_TO_BE_ADDED);
-        boolean hasAddedUsers = CollectionUtils.isNotEmpty(usersToBeAdded);
-        fieldValues.add(new FieldValue(field.getName(), String.valueOf(hasAddedUsers), ValueType.STRING));
+        List<?> usersToBeAssigned = (List<?>) contextData.get(USERS_TO_BE_ASSIGNED);
+        boolean hasAssignedUsers = CollectionUtils.isNotEmpty(usersToBeAssigned);
+        fieldValues.add(new FieldValue(field.getName(), String.valueOf(hasAssignedUsers), ValueType.STRING));
 
         if (log.isDebugEnabled()) {
-            log.debug("Role has added users: " + hasAddedUsers + " (users to add count: " +
-                    (usersToBeAdded != null ? usersToBeAdded.size() : 0) + ")");
+            log.debug("Role has assigned users: " + hasAssignedUsers + " (users to assign count: " +
+                    (usersToBeAssigned != null ? usersToBeAssigned.size() : 0) + ")");
         }
     }
 
     /**
-     * Add role has deleted users field value from context data.
-     * Checks if the "Users to be Deleted" list in context data is non-empty.
+     * Add role has unassigned users field value from context data.
+     * Checks if the "Users to be Unassigned" list in context data is non-empty.
      *
      * @param fieldValues List of field values to add to.
      * @param field       Field being processed.
      * @param contextData Context data from the flow context.
      */
-    private void addRoleHasDeletedUsersFieldValue(List<FieldValue> fieldValues, Field field,
-                                                  Map<String, Object> contextData) {
+    private void addRoleHasUnassignedUsersFieldValue(List<FieldValue> fieldValues, Field field,
+                                                     Map<String, Object> contextData) {
 
-        List<?> usersToBeDeleted = (List<?>) contextData.get(USERS_TO_BE_DELETED);
-        boolean hasDeletedUsers = CollectionUtils.isNotEmpty(usersToBeDeleted);
-        fieldValues.add(new FieldValue(field.getName(), String.valueOf(hasDeletedUsers), ValueType.STRING));
+        List<?> usersToBeUnassigned = (List<?>) contextData.get(USERS_TO_BE_UNASSIGNED);
+        boolean hasUnassignedUsers = CollectionUtils.isNotEmpty(usersToBeUnassigned);
+        fieldValues.add(new FieldValue(field.getName(), String.valueOf(hasUnassignedUsers), ValueType.STRING));
 
         if (log.isDebugEnabled()) {
-            log.debug("Role has deleted users: " + hasDeletedUsers + " (users to delete count: " +
-                    (usersToBeDeleted != null ? usersToBeDeleted.size() : 0) + ")");
+            log.debug("Role has unassigned users: " + hasUnassignedUsers + " (users to unassign count: " +
+                    (usersToBeUnassigned != null ? usersToBeUnassigned.size() : 0) + ")");
         }
     }
 }
