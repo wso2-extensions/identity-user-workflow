@@ -25,19 +25,25 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.event.services.IdentityEventService;
+import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
+import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
+import org.wso2.carbon.identity.role.v2.mgt.core.listener.RoleManagementListener;
 import org.wso2.carbon.identity.workflow.mgt.WorkflowManagementService;
 import org.wso2.carbon.identity.workflow.mgt.extension.WorkflowRequestHandler;
 import org.wso2.carbon.user.core.listener.UserManagementErrorEventListener;
 import org.wso2.carbon.user.core.listener.UserOperationEventListener;
 import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.carbon.user.mgt.workflow.userstore.AddRoleV2WFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.AddRoleWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.AddUserWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.DeleteMultipleClaimsWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.DeleteRoleWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.DeleteUserWFRequestHandler;
+import org.wso2.carbon.user.mgt.workflow.userstore.RoleManagementActionListener;
 import org.wso2.carbon.user.mgt.workflow.userstore.SetMultipleClaimsWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.UpdateRoleNameWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.UpdateRoleUsersWFRequestHandler;
+import org.wso2.carbon.user.mgt.workflow.userstore.UpdateRoleV2UsersWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.UpdateUserRolesWFRequestHandler;
 import org.wso2.carbon.user.mgt.workflow.userstore.UserStoreActionListener;
 import org.wso2.carbon.utils.ConfigurationContextService;
@@ -114,6 +120,38 @@ public class IdentityWorkflowServiceComponent {
         IdentityWorkflowDataHolder.getInstance().setIdentityEventService(null);
     }
 
+    @Reference(
+            name = "role.management.service",
+            service = org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetRoleManagementService")
+    protected void setRoleManagementService(RoleManagementService roleManagementService) {
+
+        IdentityWorkflowDataHolder.getInstance().setRoleManagementService(roleManagementService);
+    }
+
+    protected void unsetRoleManagementService(RoleManagementService roleManagementService) {
+
+        IdentityWorkflowDataHolder.getInstance().setRoleManagementService(null);
+    }
+
+    @Reference(
+            name = "org.wso2.carbon.identity.organization.management.service",
+            service = OrganizationManager.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetOrganizationManager")
+    protected void setOrganizationManager(OrganizationManager organizationManager) {
+
+        IdentityWorkflowDataHolder.getInstance().setOrganizationManager(organizationManager);
+    }
+
+    protected void unsetOrganizationManager(OrganizationManager organizationManager) {
+
+        IdentityWorkflowDataHolder.getInstance().setOrganizationManager(null);
+    }
+
     @Activate
     protected void activate(ComponentContext context) {
 
@@ -136,6 +174,11 @@ public class IdentityWorkflowServiceComponent {
                 null);
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateRoleNameWFRequestHandler(),
                 null);
+        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new AddRoleV2WFRequestHandler(), null);
+        bundleContext.registerService(RoleManagementListener.class.getName(), new RoleManagementActionListener(), null);
+        bundleContext.registerService(WorkflowRequestHandler.class.getName(), new UpdateRoleV2UsersWFRequestHandler(),
+                null);
+
         IdentityWorkflowDataHolder.getInstance().setBundleContext(bundleContext);
     }
 

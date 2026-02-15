@@ -89,6 +89,7 @@ public class AddRoleWFRequestHandler extends AbstractWorkflowRequestHandler {
         }
         Map<String, Object> wfParams = new HashMap<>();
         Map<String, Object> nonWfParams = new HashMap<>();
+        nonWfParams.put(UserStoreWFConstants.WF_INITIATOR, UserStoreWFConstants.ROLE_WF_REQUEST_HANDLER);
         wfParams.put(ROLENAME, role);
         wfParams.put(USER_STORE_DOMAIN, userStoreDomain);
         wfParams.put(PERMISSIONS, permissionList);
@@ -154,6 +155,13 @@ public class AddRoleWFRequestHandler extends AbstractWorkflowRequestHandler {
     @Override
     public void onWorkflowCompletion(String status, Map<String, Object> requestParams, Map<String, Object>
             responseAdditionalParams, int tenantId) throws WorkflowException {
+
+        String workflowInitiator = (String) requestParams.get(UserStoreWFConstants.WF_INITIATOR);
+        if (UserStoreWFConstants.ROLE_V2_WF_REQUEST_HANDLER.equals(workflowInitiator)) {
+            AddRoleV2WFRequestHandler addRoleV2WFRequestHandler = new AddRoleV2WFRequestHandler();
+            addRoleV2WFRequestHandler.onWorkflowCompletion(status, requestParams, responseAdditionalParams, tenantId);
+            return;
+        }
 
         String roleName = (String) requestParams.get(ROLENAME);
         if (roleName == null) {

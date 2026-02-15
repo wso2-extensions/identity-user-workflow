@@ -39,4 +39,8 @@ public class UserStoreWFConstants {
     public static final String ENTITY_TYPE_USER = "USER";
     public static final String ENTITY_TYPE_ROLE = "ROLE";
     public static final String ENTITY_TYPE_CLAIM = "CLAIM";
+
+    public static final String WF_INITIATOR = "WF_INITIATOR";
+    public static final String ROLE_WF_REQUEST_HANDLER = "RoleWFRequestHandler";
+    public static final String ROLE_V2_WF_REQUEST_HANDLER = "RoleV2WFRequestHandler";
 }
