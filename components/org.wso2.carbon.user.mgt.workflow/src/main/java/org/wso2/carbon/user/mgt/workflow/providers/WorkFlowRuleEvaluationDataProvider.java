@@ -163,7 +163,6 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                     fieldValues.add(new FieldValue(field.getName(), (String) existingFieldValue.getValue(),
                             ValueType.REFERENCE));
                 } else {
-                    // ValueType.STRING
                     fieldValues.add(new FieldValue(field.getName(), (String) existingFieldValue.getValue(),
                             ValueType.STRING));
                 }
@@ -200,7 +199,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                         break;
                     default:
                         throw new RuleEvaluationDataProviderException(
-                                "Unsupported field by WF rule evaluation data provider: " + fieldName);
+                                "Unsupported field by workflow rule evaluation data provider: " + fieldName);
                 }
             } catch (RuleEvaluationDataProviderException e) {
                 throw e;
@@ -293,7 +292,6 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                 }
                 return;
             }
- 
             List<org.wso2.carbon.user.core.common.Group> groupList =
                     userStoreManager.getGroupListOfUser(userId, null, null);
             if (CollectionUtils.isNotEmpty(groupList)) {
