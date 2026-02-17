@@ -157,12 +157,15 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
             if (existingFieldValue != null) {
                 // Check the value type to create the appropriate FieldValue.
                 if (existingFieldValue.getValueType() == ValueType.LIST) {
-                    fieldValues.add(new FieldValue(field.getName(), (List<String>) existingFieldValue.getValue()));
+                    fieldValues.add(new FieldValue(field.getName(),
+                            (List<String>) existingFieldValue.getValue()));
                 } else if (existingFieldValue.getValueType() == ValueType.REFERENCE) {
-                    fieldValues.add(new FieldValue(field.getName(), (String) existingFieldValue.getValue(), ValueType.REFERENCE));
+                    fieldValues.add(new FieldValue(field.getName(), (String) existingFieldValue.getValue(),
+                            ValueType.REFERENCE));
                 } else {
                     // ValueType.STRING
-                    fieldValues.add(new FieldValue(field.getName(), (String) existingFieldValue.getValue(), ValueType.STRING));
+                    fieldValues.add(new FieldValue(field.getName(), (String) existingFieldValue.getValue(),
+                            ValueType.STRING));
                 }
                 continue;
             }
@@ -196,7 +199,8 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
                         addRoleHasUnassignedUsersFieldValue(fieldValues, field, contextData);
                         break;
                     default:
-                        throw new RuleEvaluationDataProviderException("Unsupported field by WF rule evaluation data provider: " + fieldName);
+                        throw new RuleEvaluationDataProviderException(
+                                "Unsupported field by WF rule evaluation data provider: " + fieldName);
                 }
             } catch (RuleEvaluationDataProviderException e) {
                 throw e;
