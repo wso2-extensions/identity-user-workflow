@@ -39,15 +39,12 @@ import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.mgt.workflow.internal.IdentityWorkflowDataHolder;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 
 /**
  * The unified Data Provider for Workflow Rule Evaluations across all workflow event types.
@@ -62,7 +59,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
     private static final String USERS_TO_BE_UNASSIGNED = "Users to be Deleted";
     private static final String USERNAME = "Username";
     private static final String ROLE_ID = "Role ID";
-    private static final String ROLE_AUDIENCE_ID = "Role Audience ID";
+    private static final String ROLE_AUDIENCE_ID = "Audience ID";
     private static final String EVENT_TYPE = "eventType";
 
     /**
@@ -128,6 +125,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<FieldValue> getEvaluationData(RuleEvaluationContext ruleEvaluationContext, FlowContext flowContext,
                                               String tenantDomain) throws RuleEvaluationDataProviderException {
 
@@ -252,6 +250,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
 
     /**
      * Add user role field value from context data or fetch from user store.
+     * Retrieves role IDs (not role names) to match against rule expressions.
      */
     private void addUserRolesFieldValue(List<FieldValue> fieldValues, Field field, Map<String, Object> contextData,
                                        String tenantDomain) throws RuleEvaluationDataProviderException {
@@ -261,14 +260,29 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
             AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) CarbonContext
                     .getThreadLocalCarbonContext().getUserRealm().getUserStoreManager();
 
-            String[] roleArray = userStoreManager.getRoleListOfUser(username);
-            if (isNotEmpty(roleArray)) {
-                List<String> roleList = Arrays.asList(roleArray);
-                fieldValues.add(new FieldValue(field.getName(), roleList));
+            // Get user ID from username.
+            String userId = userStoreManager.getUserIDFromUserName(username);
+            if (StringUtils.isBlank(userId)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Could not resolve user ID for username: " + username);
+                }
+                return;
+            }
+
+            // Get role IDs using RoleManagementService.
+            RoleManagementService roleManagementService = IdentityWorkflowDataHolder.getInstance()
+                    .getRoleManagementService();
+            List<String> roleIdList = roleManagementService.getRoleIdListOfUser(userId, tenantDomain);
+            
+            if (CollectionUtils.isNotEmpty(roleIdList)) {
+                fieldValues.add(new FieldValue(field.getName(), roleIdList));
             }
         } catch (org.wso2.carbon.user.api.UserStoreException e) {
             throw new RuleEvaluationDataProviderException(
-                    "Error retrieving roles for username: " + username, e);
+                    "Error retrieving user ID for username: " + username, e);
+        } catch (IdentityRoleManagementException e) {
+            throw new RuleEvaluationDataProviderException(
+                    "Error retrieving role IDs for username: " + username, e);
         }
     }
 
@@ -284,7 +298,7 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
             AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) CarbonContext
                     .getThreadLocalCarbonContext().getUserRealm().getUserStoreManager();
 
-            // Get user ID first for getGroupListOfUser.
+            // Get user ID from username.
             String userId = userStoreManager.getUserIDFromUserName(username);
             if (StringUtils.isBlank(userId)) {
                 if (log.isDebugEnabled()) {
@@ -295,10 +309,10 @@ public class WorkFlowRuleEvaluationDataProvider implements RuleEvaluationDataPro
             List<org.wso2.carbon.user.core.common.Group> groupList =
                     userStoreManager.getGroupListOfUser(userId, null, null);
             if (CollectionUtils.isNotEmpty(groupList)) {
-                List<String> groupNames = groupList.stream()
-                        .map(org.wso2.carbon.user.core.common.Group::getGroupName)
+                List<String> groupIds = groupList.stream()
+                        .map(org.wso2.carbon.user.core.common.Group::getGroupID)
                         .collect(Collectors.toList());
-               fieldValues.add(new FieldValue(field.getName(), groupNames));
+               fieldValues.add(new FieldValue(field.getName(), groupIds));
             }
         } catch (org.wso2.carbon.user.api.UserStoreException e) {
             throw new RuleEvaluationDataProviderException(
