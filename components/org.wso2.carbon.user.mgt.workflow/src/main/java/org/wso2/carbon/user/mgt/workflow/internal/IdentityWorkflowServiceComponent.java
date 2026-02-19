@@ -174,8 +174,6 @@ public class IdentityWorkflowServiceComponent {
                 null);
         bundleContext.registerService(WorkflowRequestHandler.class.getName(), new SelfRegisterUserWFRequestHandler(),
                 null);
-        bundleContext.registerService(RuleEvaluationDataProvider.class.getName(),
-                new WorkFlowRuleEvaluationDataProvider(), null);
 
         // todo: commenting out for a test failure
         // bundleContext.registerService(WorkflowRequestHandler.class.getName(), new ChangeCredentialWFRequestHandler(),
