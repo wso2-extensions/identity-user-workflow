@@ -40,8 +40,11 @@ public class UserStoreWFConstants {
     public static final String UPDATE_USER_ROLES_EVENT = "UPDATE_USER_ROLES";
     public static final String UPDATE_ROLE_USERS_EVENT = "UPDATE_ROLE_USERS";
     public static final String UPDATE_ROLE_V2_USERS_EVENT = "UPDATE_ROLES_OF_USERS";
+    public static final String UPDATE_GROUP_USERS_EVENT = "UPDATE_GROUPS_OF_USERS";
+    public static final String DELETE_GROUP_EVENT = "DELETE_GROUP";
 
     public static final String ENTITY_TYPE_USER = "USER";
     public static final String ENTITY_TYPE_ROLE = "ROLE";
     public static final String ENTITY_TYPE_CLAIM = "CLAIM";
+    public static final String ENTITY_TYPE_GROUP = "GROUP";
 }
