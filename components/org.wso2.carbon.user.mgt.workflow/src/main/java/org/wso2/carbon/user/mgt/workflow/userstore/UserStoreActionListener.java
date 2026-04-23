@@ -223,7 +223,8 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
     public boolean doPreSetUserClaimValues(String userName, Map<String, String> claims, String profileName,
                                            UserStoreManager userStoreManager) throws UserStoreException {
 
-        if (!isEnable() || isCalledViaIdentityMgtListners() || isDisabled()) {
+        if (!isEnable() || isCalledViaIdentityMgtListners() 
+                || !isEventAssociatedWithWorkflow(UserStoreWFConstants.SET_MULTIPLE_USER_CLAIMS_EVENT)) {
             return true;
         }
         try {
@@ -232,8 +233,13 @@ public class UserStoreActionListener extends AbstractIdentityUserOperationEventL
             String domain = userStoreManager.getRealmConfiguration().getUserStoreProperty(UserCoreConstants.RealmConfig
                     .PROPERTY_DOMAIN_NAME);
 
-            return setMultipleClaimsWFRequestHandler.startSetMultipleClaimsWorkflow(domain, userName, claims,
+            boolean state = setMultipleClaimsWFRequestHandler.startSetMultipleClaimsWorkflow(domain, userName, claims,
                     profileName);
+            if (!state) {
+                throw new UserStoreException("User claim update request is sent to the workflow engine for approval.",
+                        UserCoreConstants.ErrorCode.USER_CLAIMS_UPDATE_WORKFLOW_CREATED);
+            }
+            return true;
         } catch (WorkflowException e) {
             // Sending e.getMessage() since it is required to give error message to end user.
             throw new UserStoreException(e.getMessage(), e);
