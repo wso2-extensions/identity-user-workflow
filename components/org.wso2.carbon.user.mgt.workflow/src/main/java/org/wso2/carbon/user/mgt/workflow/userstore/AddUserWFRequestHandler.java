@@ -291,14 +291,16 @@ public class AddUserWFRequestHandler extends AbstractWorkflowRequestHandler {
     public boolean isValidOperation(Entity[] entities) throws WorkflowException {
 
         WorkflowManagementService workflowService = IdentityWorkflowDataHolder.getInstance().getWorkflowService();
+        boolean eventEngaged = workflowService.isEventAssociated(UserStoreWFConstants.ADD_USER_EVENT);
         AbstractUserStoreManager userStoreManager = UserStoreWFUtils.getUserStoreManager();
 
         for (Entity entity : entities) {
             try {
                 // User related validations.
                 if (UserStoreWFConstants.ENTITY_TYPE_USER.equals(entity.getEntityType())) {
-                    // Check if the user exists in the user store.
-                    if (userStoreManager.isExistingUser(entity.getEntityId())) {
+                    // Check if the user exists in the user store only when the event is engaged with a workflow.
+                    // When not engaged, let the user store handle the duplicate detection to return a proper error.
+                    if (eventEngaged && userStoreManager.isExistingUser(entity.getEntityId())) {
                         throw new WorkflowException(ERROR_CODE_USER_WF_USER_ALREADY_EXISTS.getMessage(),
                                 ERROR_CODE_USER_WF_USER_ALREADY_EXISTS.getCode());
                         // Check if user already exists in pending add user workflow.
